@@ -1,0 +1,12 @@
+{
+  "name": "Serendipity Vintage",
+  "short_name": "Serendipity",
+  "start_url": "vintage-shop.html",
+  "display": "standalone",
+  "background_color": "#f7f5ef",
+  "theme_color": "#f7f5ef",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-180.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}
