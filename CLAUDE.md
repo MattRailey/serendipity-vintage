@@ -89,7 +89,7 @@ When she drops Etsy's **Sold Orders** CSV and **monthly statement** in `etsy/`:
   - Codes are `YYMM-###`, and each is written on masking tape on the physical piece.
   - Dates are local `YYYY-MM-DD` strings.
   - Timestamps are ms.
-- **Deleting:** a deleted record becomes `{ id, deleted: true, updatedAt }`. Never remove it outright.
+- **Deleting:** a deleted record becomes `{ id, deleted: true, updatedAt }` (a deleted piece also keeps its `code`, so the code is never reused). Never remove it outright.
 - **Photos:** don't delete or rename them. The app shows them by path.
 - **Advice:** this is bookkeeping support, not tax advice. Mileage uses the IRS standard rate in Settings.
 - **Accounts:** in her Etsy or Vinted account, save changes as drafts only. Never publish, delete, reprice live listings, message buyers, or touch payments or settings unless she asks for that specific action.
