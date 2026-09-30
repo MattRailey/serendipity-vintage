@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Vintage Shop">
+<meta name="theme-color" content="#f6f0e6">
+<title>Vintage Shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="css/app.css">
+<script src="js/core.js" defer></script>
+<script src="js/dropbox.js" defer></script>
+<script src="js/speech.js" defer></script>
+<script src="js/pieces.js" defer></script>
+<script src="js/piece.js" defer></script>
+<script src="js/hauls.js" defer></script>
+<script src="js/money.js" defer></script>
+<script src="js/settings.js" defer></script>
+<script src="js/app.js" defer></script>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 7.5V6.8a1.8 1.8 0 10-1.8-1.8"/><path d="M12 7.5L3 15.5h18z"/></svg></span><div><h1 id="shop-name">Vintage Shop</h1><div class="sync"><span id="sync-dot" class="sync-dot"></span><span id="sync-text">Starting…</span></div></div></div>
+  <div id="queue-note" class="queue-note hide"></div>
+</header>
+
+<main>
+  <!-- PIECES -->
+  <section id="p-pieces" class="panel">
+    <div class="search"><input id="q" type="search" placeholder="Search code, name, brand, notes" autocomplete="off"></div>
+    <div id="status-chips" class="chips scroll"></div>
+    <div id="piece-list" class="cards"></div>
+  </section>
+
+  <!-- HAULS -->
+  <section id="p-hauls" class="panel">
+    <div class="panel-head"><h2>Hauls</h2><p class="muted">One per receipt. Buying trips and their mileage are logged here.</p></div>
+    <div id="haul-list" class="rows"></div>
+    <div class="panel-head" style="margin-top:28px"><h2>Expenses</h2><p class="muted">Supplies, mailers, fees, and other costs.</p></div>
+    <div id="expense-list" class="rows"></div>
+    <button class="btn ghost wide" id="btn-add-expense" style="margin-top:10px">+ Add an expense</button>
+  </section>
+
+  <!-- MONEY -->
+  <section id="p-money" class="panel">
+    <div class="panel-head row-between"><h2>Money</h2><select id="money-year" class="pill-select"></select></div>
+    <div id="money-body"></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="p-settings" class="panel">
+    <div class="panel-head"><h2>Settings</h2></div>
+    <div class="card">
+      <h3>Shop</h3>
+      <label class="fld"><span>Shop name</span><input id="set-name" placeholder="Vintage Shop"></label>
+      <label class="fld"><span>Measurement note (added to listings)</span><input id="set-measnote" placeholder="All measurements taken with the garment laid flat."></label>
+    </div>
+    <div class="card">
+      <h3>Stores</h3>
+      <p class="muted small">Enter each store's round-trip miles once and hauls fill in mileage automatically.</p>
+      <div id="store-list" class="rows tight"></div>
+      <button class="btn ghost" id="btn-add-store">+ Add a store</button>
+    </div>
+    <div class="card">
+      <h3>Mileage rate</h3>
+      <p class="muted small">IRS business standard mileage rate, per mile. 2026 is 72.5¢ (<a href="https://www.irs.gov/newsroom/irs-sets-2026-business-standard-mileage-rate-at-725-cents-per-mile-up-25-cents" target="_blank" rel="noopener">irs.gov</a>). Add each new year's rate in January.</p>
+      <div id="rate-list" class="rate-grid"></div>
+    </div>
+    <div class="card">
+      <h3>Dropbox</h3>
+      <p id="dbx-status" class="small"></p>
+      <label class="fld"><span>Folder</span><input id="set-folder" placeholder="/Vintage Shop"></label>
+      <div id="dbx-appkey-row"><label class="fld"><span>Dropbox app key</span><input id="dbx-appkey" autocomplete="off" spellcheck="false"></label>
+        <p class="muted small">Redirect URI to add on the Dropbox app: <code id="dbx-redirect"></code></p></div>
+      <div class="btn-row">
+        <button class="btn" id="btn-connect">Connect Dropbox</button>
+        <button class="btn ghost hide" id="btn-sync">Sync now</button>
+        <button class="btn ghost hide" id="btn-disconnect">Disconnect</button>
+      </div>
+      <div class="btn-row"><button class="btn ghost" id="btn-setuplink">Copy set-up link for another phone</button></div>
+    </div>
+    <div class="card">
+      <h3>Working with Claude</h3>
+      <p class="small">Mark a piece <b>Ready for Claude</b> once its photos and measurements are in. Then ask Claude to <i>“check the shop folder.”</i> Claude reads the tags and photos, researches the piece, and writes the title, 13 tags, attributes, description, and a price range back onto the piece. It then shows as <b>Listing drafted</b>.</p>
+      <p class="small">Once a month, download Etsy's <i>Sold Orders</i> CSV and <i>monthly statement</i> into the folder's <code>etsy/</code> subfolder. Claude matches sales to pieces and posts fees.</p>
+    </div>
+    <div class="card">
+      <h3>Backup</h3>
+      <div class="btn-row"><button class="btn ghost" id="btn-backup">Download a backup</button><label class="btn ghost">Restore from backup<input type="file" id="restore-file" accept=".json,application/json" hidden></label></div>
+    </div>
+    <p class="muted small center" id="version-line"></p>
+  </section>
+</main>
+
+<button id="fab" class="fab" aria-label="Add">+</button>
+<div id="fab-menu" class="fab-menu">
+  <button data-add="haul"><b>New haul</b><span>Receipt, store, pieces bought</span></button>
+  <button data-add="piece"><b>New piece</b><span>One item, no receipt</span></button>
+  <button data-add="expense"><b>Expense</b><span>Supplies, mailers, fees</span></button>
+</div>
+
+<nav class="tabs">
+  <button data-panel="pieces"><svg viewBox="0 0 24 24"><path d="M8 3l-4 3 2 4 2-1v12h8V9l2 1 2-4-4-3c-1 1.5-2.3 2-4 2S9 4.5 8 3z"/></svg><span>Pieces</span></button>
+  <button data-panel="hauls"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1.5 12h-11zM9 8V6a3 3 0 016 0v2"/></svg><span>Hauls</span></button>
+  <button data-panel="money"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg><span>Money</span></button>
+  <button data-panel="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg><span>Settings</span></button>
+</nav>
+
+<!-- PIECE SHEET -->
+<div id="piece-sheet" class="sheet" role="dialog" aria-modal="true">
+  <div class="sheet-head">
+    <button class="icon-btn" id="pc-close" aria-label="Close">←</button>
+    <div class="code-big" id="pc-code"></div>
+    <select id="pc-status" class="pill-select"></select>
+  </div>
+  <div class="sheet-body">
+    <label class="fld"><span>What is it?</span><input id="pc-title" placeholder="e.g. Brown plaid pearl snap shirt"></label>
+    <div class="fld"><span>Type</span><div id="pc-types" class="chips wrap"></div></div>
+
+    <h3 class="sec">Photos</h3>
+    <div id="pc-shots" class="shots"></div>
+    <div id="pc-photos" class="photo-grid"></div>
+    <input type="file" id="pc-cam" accept="image/*" capture="environment" hidden>
+    <input type="file" id="pc-lib" accept="image/*" multiple hidden>
+
+    <h3 class="sec">Measurements</h3>
+    <div class="mic-card">
+      <button id="pc-mic" class="mic-btn" aria-label="Dictate measurements"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button>
+      <div class="mic-text">
+        <b id="pc-mic-label">Tap and talk</b>
+        <span class="muted small" id="pc-mic-hint">“Tag size medium, pit to pit eighteen and a half, length twenty-seven, small pinhole left cuff.”</span>
+      </div>
+    </div>
+    <textarea id="pc-dict" rows="2" placeholder="What you say lands here. You can also type, or use the mic on the keyboard."></textarea>
+    <div id="pc-interim" class="interim"></div>
+    <div class="grid2">
+      <label class="fld"><span>Tag size</span><input id="pc-size" placeholder="M, 12, 32 × 30"></label>
+      <label class="fld"><span>Era (if known)</span><input id="pc-era" placeholder="70s"></label>
+    </div>
+    <div id="pc-meas" class="meas-grid"></div>
+    <button class="linkish" id="pc-more-meas">+ other measurement</button>
+    <label class="fld"><span>Condition &amp; flaws</span><textarea id="pc-cond" rows="2" placeholder="Pinhole near left cuff (see photo)"></textarea></label>
+    <label class="fld"><span>Notes for Claude</span><textarea id="pc-notes" rows="2" placeholder="Brand, fabric, anything you already know"></textarea></label>
+
+    <button class="btn wide" id="pc-ready">Ready for Claude</button>
+
+    <div id="pc-listing"></div>
+
+    <h3 class="sec">Where it's listed <small>tap to turn on</small></h3>
+    <div id="pc-venues" class="venues"></div>
+    <div id="pc-stale" class="stale hide"></div>
+
+    <h3 class="sec">Cost</h3>
+    <div class="grid2">
+      <label class="fld"><span>Paid</span><input id="pc-cost" inputmode="decimal" placeholder="$"></label>
+      <label class="fld"><span>Haul</span><select id="pc-haul"></select></label>
+    </div>
+
+    <h3 class="sec">Sold</h3>
+    <div class="grid2">
+      <label class="fld"><span>Sold on</span><select id="pc-soldVia"><option value="">— not sold —</option><option value="etsy">Etsy</option><option value="vinted">Vinted</option><option value="consign">Consignment</option><option value="other">Other</option></select></label>
+      <label class="fld"><span>Date sold</span><input id="pc-soldAt" type="date"></label>
+    </div>
+    <div class="grid3">
+      <label class="fld"><span>Sold for</span><input id="pc-soldPrice" inputmode="decimal" placeholder="$"></label>
+      <label class="fld"><span>Fees / shop's cut</span><input id="pc-fees" inputmode="decimal" placeholder="$"></label>
+      <label class="fld"><span>Ship label</span><input id="pc-shipCost" inputmode="decimal" placeholder="$"></label>
+    </div>
+    <div id="pc-profit" class="profit-line"></div>
+    <button class="btn danger-ghost wide" id="pc-delete">Delete this piece</button>
+  </div>
+</div>
+
+<!-- HAUL SHEET -->
+<div id="haul-sheet" class="sheet" role="dialog" aria-modal="true">
+  <div class="sheet-head"><button class="icon-btn" id="hl-close" aria-label="Close">←</button><div class="sheet-title" id="hl-title">New haul</div><span></span></div>
+  <div class="sheet-body">
+    <button class="receipt-btn" id="hl-receipt-btn"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span id="hl-receipt-img"></span><b id="hl-receipt-label">Snap the receipt</b><span class="muted small">Tip: lay it on top of the pile so the finds are in the picture too</span></button>
+    <input type="file" id="hl-cam" accept="image/*" capture="environment" hidden>
+    <div class="grid2">
+      <label class="fld"><span>Date</span><input id="hl-date" type="date"></label>
+      <label class="fld"><span>Store</span><select id="hl-store"></select></label>
+    </div>
+    <div class="grid2">
+      <label class="fld"><span>Receipt total</span><input id="hl-total" inputmode="decimal" placeholder="$"></label>
+      <label class="fld"><span>Pieces for resale</span><input id="hl-count" inputmode="numeric" placeholder="How many?"></label>
+    </div>
+    <label class="fld"><span>Miles (round trip)</span><input id="hl-miles" inputmode="decimal"><em class="hint" id="hl-miles-hint"></em></label>
+    <label class="fld"><span>Notes</span><input id="hl-notes" placeholder="Anything on the receipt that wasn't for resale?"></label>
+    <button class="btn wide" id="hl-save">Save haul</button>
+    <div id="hl-pieces"></div>
+    <button class="btn danger-ghost wide hide" id="hl-delete">Delete this haul</button>
+  </div>
+</div>
+
+<!-- EXPENSE SHEET -->
+<div id="exp-sheet" class="sheet" role="dialog" aria-modal="true">
+  <div class="sheet-head"><button class="icon-btn" id="ex-close" aria-label="Close">←</button><div class="sheet-title" id="ex-title">Expense</div><span></span></div>
+  <div class="sheet-body">
+    <button class="receipt-btn" id="ex-receipt-btn"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span id="ex-receipt-img"></span><b id="ex-receipt-label">Snap the receipt</b></button>
+    <input type="file" id="ex-cam" accept="image/*" capture="environment" hidden>
+    <div class="grid2">
+      <label class="fld"><span>Date</span><input id="ex-date" type="date"></label>
+      <label class="fld"><span>Amount</span><input id="ex-amount" inputmode="decimal" placeholder="$"></label>
+    </div>
+    <label class="fld"><span>Category</span><select id="ex-cat"></select></label>
+    <label class="fld"><span>Where / what</span><input id="ex-vendor" placeholder="Walmart — poly mailers, lint rollers"></label>
+    <button class="btn wide" id="ex-save">Save</button>
+    <button class="btn danger-ghost wide hide" id="ex-delete">Delete</button>
+  </div>
+</div>
+
+<!-- small dialogs -->
+<div id="store-sheet" class="dialog-bg"><div class="dialog">
+  <h3 id="st-title">Store</h3>
+  <label class="fld"><span>Name</span><input id="st-name" placeholder="Goodwill"></label>
+  <label class="fld"><span>Town</span><input id="st-town" placeholder="La Grande"></label>
+  <label class="fld"><span>Round-trip miles from home</span><input id="st-miles" inputmode="decimal"></label>
+  <div class="btn-row"><button class="btn" id="st-save">Save</button><button class="btn ghost" id="st-cancel">Cancel</button><button class="btn danger-ghost hide" id="st-delete">Delete</button></div>
+</div></div>
+
+<div id="viewer" class="viewer"><img id="viewer-img" alt=""><button class="icon-btn light" id="viewer-close" aria-label="Close">✕</button></div>
+<div id="toast" class="toast"></div>
+</body>
+</html>

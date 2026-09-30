@@ -1,0 +1,12 @@
+{
+  "name": "Vintage Shop",
+  "short_name": "Vintage Shop",
+  "start_url": "vintage-shop.html",
+  "display": "standalone",
+  "background_color": "#f6f0e6",
+  "theme_color": "#f6f0e6",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-180.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

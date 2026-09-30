@@ -1,0 +1,11 @@
+{
+  "name": "vintage-shop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Intake, listing prep and bookkeeping for a vintage clothing shop. Runs in the browser; data lives in Dropbox.",
+  "scripts": {
+    "start": "python3 -m http.server 4173",
+    "test": "node tests/parse.check.js && playwright test"
+  },
+  "devDependencies": { "@playwright/test": "1.56.0" }
+}
