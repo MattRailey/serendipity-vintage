@@ -1,4 +1,4 @@
-/* Vintage Shop — piece.js
+/* Serendipity Vintage — piece.js
    The piece sheet: photos by shot, dictated measurements, Claude's listing drafts (Etsy + Vinted),
    where it's listed, cost and sale. Every edit saves as you go.
    See DEVELOPER.md. */

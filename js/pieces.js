@@ -1,4 +1,4 @@
-/* Vintage Shop — pieces.js
+/* Serendipity Vintage — pieces.js
    Piece statuses, the Pieces list (search + status chips), and small shared piece helpers.
    See DEVELOPER.md. */
 'use strict';

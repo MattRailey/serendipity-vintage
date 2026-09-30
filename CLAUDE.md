@@ -1,6 +1,6 @@
-# Vintage Shop: what Claude does with the shop folder
+# Serendipity Vintage: what Claude does with the shop folder
 
-The app captures each piece (photos, dictated measurements, cost). Claude does the research and writing. Everything lives in the Dropbox folder `/Vintage Shop` (on Matt's laptop: `D:\Dropbox\Vintage Shop`).
+The app captures each piece (photos, dictated measurements, cost). Claude does the research and writing. Everything lives in the Dropbox folder `/Serendipity Vintage` (on Matt's laptop: `D:\Dropbox\Serendipity Vintage`).
 
 ```
 vintage-shop.json            the whole shop: items, hauls, expenses, stores, settings
@@ -9,6 +9,13 @@ receipts/                    haul and expense receipt photos
 etsy/                        Etsy CSV exports and monthly statements she drops in
 imports/                     Claude's change logs (one file per run)
 ```
+
+## The shop
+
+- **Serendipity Vintage** — Sarah Railey, owner and curator.
+- Etsy: https://www.etsy.com/shop/SerendipityvintageOR · Instagram: https://www.instagram.com/serendipityvintageco/
+- Brand feel (from her card): soft, botanical, white trillium and leaf green. Warm and knowledgeable, not salesy. Descriptions can close with a short shop line in that voice.
+- Her Etsy Stats search terms and her existing listings are the best guide to her voice and what buyers search. Read them when you can.
 
 ## "Check the shop folder"
 

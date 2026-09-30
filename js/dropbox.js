@@ -1,4 +1,4 @@
-/* Vintage Shop — dropbox.js
+/* Serendipity Vintage — dropbox.js
    Dropbox sign-in (OAuth PKCE), revision-checked download/upload of vintage-shop.json,
    the sync loop, the photo upload queue (works offline), and photo thumbnails.
    See DEVELOPER.md. */
@@ -30,7 +30,7 @@ async function dbxDownload(){
   if(!r.ok) throw new Error('download failed (HTTP '+r.status+')');
   let rev=null; try{ rev=JSON.parse(r.headers.get('Dropbox-API-Result')||'{}').rev||null; }catch(e){}
   const data=JSON.parse(await r.text());
-  if(!validStore(data)) throw new Error('the Dropbox file isn\'t a Vintage Shop file — not touching it');
+  if(!validStore(data)) throw new Error('the Dropbox file isn\'t a Serendipity Vintage file — not touching it');
   return { connected:true, data:fixStore(data), rev };
 }
 // Written indented, with the important fields first, so it reads well when opened in Dropbox.

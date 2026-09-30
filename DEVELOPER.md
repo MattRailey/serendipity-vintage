@@ -1,4 +1,4 @@
-# Vintage Shop — developer guide
+# Serendipity Vintage — developer guide
 
 A static single-page app: plain HTML, CSS and JavaScript, with no framework and no build step. GitHub Pages hosts it. Data lives in the user's Dropbox, which the browser talks to directly. It follows the same pattern as [tamarack-library](https://github.com/MattRailey/tamarack-library).
 

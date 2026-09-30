@@ -1,4 +1,4 @@
-/* Vintage Shop — hauls.js
+/* Serendipity Vintage — hauls.js
    Hauls (one receipt: store, total, how many pieces → pieces with codes and split cost, trip miles),
    expenses (supplies, mailers, fees), and the store list with round-trip miles.
    See DEVELOPER.md. */

@@ -1,4 +1,4 @@
-/* Vintage Shop — settings.js
+/* Serendipity Vintage — settings.js
    Shop name, stores, mileage rates, Dropbox connection, set-up link, backup and restore. See DEVELOPER.md. */
 'use strict';
 
@@ -16,7 +16,7 @@ function renderSettings(){
   $('dbx-appkey-row').classList.toggle('hide', on || !!DEFAULT_DBX_APP_KEY);
   $('dbx-redirect').textContent=redirectUri();
   $('btn-connect').classList.toggle('hide', on); $('btn-disconnect').classList.toggle('hide', !on); $('btn-sync').classList.toggle('hide', !on);
-  $('version-line').textContent='Vintage Shop · '+pieces().length+' pieces · '+liveOf('hauls').length+' hauls';
+  $('version-line').textContent='Serendipity Vintage · '+pieces().length+' pieces · '+liveOf('hauls').length+' hauls';
 }
 $('set-name').onchange=e=>{ setSetting('shopName', e.target.value.trim()); commit(); };
 $('set-measnote').onchange=e=>{ setSetting('measNote', e.target.value.trim()); commit(); };
@@ -24,7 +24,7 @@ $('rate-list').addEventListener('change', e=>{ const i=e.target.closest('[data-r
 $('store-list').onclick=e=>{ const r=e.target.closest('[data-store]'); if(r) editStore(r.dataset.store); };
 $('btn-add-store').onclick=()=>editStore(null);
 $('set-folder').onchange=e=>{
-  let f=e.target.value.trim()||'/Vintage Shop'; if(!f.startsWith('/')) f='/'+f; f=f.replace(/\/+$/,'');
+  let f=e.target.value.trim()||'/Serendipity Vintage'; if(!f.startsWith('/')) f='/'+f; f=f.replace(/\/+$/,'');
   if(f===dbxFolder()) return;
   if(!confirm('Use '+f+' as the shop folder on this device? The app will reload and sync with that folder.')){ e.target.value=dbxFolder(); return; }
   lsSet(FOLDER_KEY, f); lsSet(SYNCED_KEY, ''); location.reload();
@@ -41,7 +41,7 @@ $('btn-setuplink').onclick=async()=>{
 $('btn-backup').onclick=()=>download('vintage-shop-backup-'+todayLocal()+'.json', readableJSON(store), 'application/json');
 $('restore-file').onchange=async e=>{
   const f=e.target.files[0]; e.target.value=''; if(!f) return;
-  try{ const s=JSON.parse(await f.text()); if(!validStore(s)) throw new Error('not a Vintage Shop backup');
+  try{ const s=JSON.parse(await f.text()); if(!validStore(s)) throw new Error('not a Serendipity Vintage backup');
     if(!confirm('Merge this backup in? Nothing already here is deleted; newer edits win.')) return;
     store=mergeStores(store, fixStore(s)); snapAll(); store.updatedAt=Date.now(); writeLocal(); markDirty(); schedulePush(); refreshAll(); toast('Backup merged');
   }catch(err){ toast('Couldn’t restore: '+err.message, 3500); }

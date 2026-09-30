@@ -28,7 +28,7 @@ test('new haul: receipt, new store, pieces with codes and split cost, synced to 
   const r = net.remote;
   expect(r.items.length).toBe(4); expect(r.hauls.length).toBe(1); expect(r.stores[0].roundTrip).toBe(12);
   expect(r.items.map(i => i.cost).reduce((a, b) => a + b, 0)).toBeCloseTo(31, 5);
-  expect(net.uploads.some(u => u.path.startsWith('/Vintage Shop/receipts/') && u.size > 1000)).toBe(true);
+  expect(net.uploads.some(u => u.path.startsWith('/Serendipity Vintage/receipts/') && u.size > 1000)).toBe(true);
   // a second haul the same day doesn't double-count the drive
   await page.click('#hl-close'); await page.click('#fab'); await page.click('[data-add="haul"]');
   await page.selectOption('#hl-store', { label: 'Goodwill · La Grande' });
@@ -52,8 +52,8 @@ test('piece: dictation fills measurements, photos go to the piece folder', async
   await expect(page.locator('[data-shot="tag"]')).toHaveClass(/next/);
   await page.waitForTimeout(2500);
   const paths = net.uploads.map(u => u.path);
-  expect(paths).toContain(`/Vintage Shop/pieces/${code}/${code} 01 front.jpg`);
-  expect(paths).toContain(`/Vintage Shop/pieces/${code}/${code} 02 back.jpg`);
+  expect(paths).toContain(`/Serendipity Vintage/pieces/${code}/${code} 01 front.jpg`);
+  expect(paths).toContain(`/Serendipity Vintage/pieces/${code}/${code} 02 back.jpg`);
   const it = net.remote.items.find(i => i.code === code);
   expect(it.measurements).toEqual({ pit: 18.5, length: 27, shoulder: 17, sleeve: 24.25 });
   expect(it.photos.map(p => p.kind)).toEqual(['front', 'back']);

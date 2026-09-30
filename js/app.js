@@ -1,4 +1,4 @@
-/* Vintage Shop — app.js
+/* Serendipity Vintage — app.js
    Tabs, the + menu, refreshing after changes, and start-up. Loads last. See DEVELOPER.md. */
 'use strict';
 
@@ -12,8 +12,8 @@ function refreshPanel(){
   if(p==='pieces') renderPieces(); else if(p==='hauls') renderHauls(); else if(p==='money') renderMoney(); else if(p==='settings') renderSettings();
 }
 function refreshAll(){
-  $('shop-name').textContent=setting('shopName','Vintage Shop');
-  document.title=setting('shopName','Vintage Shop');
+  $('shop-name').textContent=setting('shopName','Serendipity Vintage');
+  document.title=setting('shopName','Serendipity Vintage');
   refreshPanel();
   if(curId && $('piece-sheet').classList.contains('open')) fillPiece(false);
   if(haulId && $('haul-sheet').classList.contains('open')) renderHaulPieces();

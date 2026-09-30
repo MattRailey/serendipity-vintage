@@ -1,7 +1,7 @@
-/* Vintage Shop — all styles. Warm paper, ink, rust. Phone first; centered column on a computer. */
+/* Serendipity Vintage — all styles. Warm paper, ink, rust. Phone first; centered column on a computer. */
 :root{
-  --paper:#f6f0e6; --card:#fffaf2; --ink:#2b2622; --ink2:#5d544c; --muted:#8a7f74; --line:#e6dccd; --line2:#d8cbb8;
-  --rust:#b0532f; --rust-d:#8f4125; --rust-bg:#f6e3d8; --sage:#566449; --sage-bg:#e5eadb; --mustard:#b98a1f; --mustard-bg:#f5ead0;
+  --paper:#f7f5ef; --card:#fffefa; --ink:#2e2f2a; --ink2:#55584f; --muted:#858a7e; --line:#e4e4d8; --line2:#d3d5c5;
+  --rust:#557a3d; --rust-d:#43622f; --rust-bg:#e6eedb; --sage:#3f6b5e; --sage-bg:#dfece7; --script:'Allura', 'Snell Roundhand', cursive; --mustard:#b98a1f; --mustard-bg:#f5ead0;
   --plum:#6e4460; --plum-bg:#efe2ea; --blue:#3f5f7a; --blue-bg:#e0e8ef; --red:#a63a2b;
   --r:14px; --shadow:0 1px 2px rgba(60,40,20,.06), 0 4px 14px rgba(60,40,20,.06);
   --serif:'Fraunces', Georgia, serif; --sans:'DM Sans', -apple-system, system-ui, sans-serif; --mono:'DM Mono', ui-monospace, Menlo, monospace;
@@ -25,14 +25,15 @@ select{ appearance:none; -webkit-appearance:none; background:#fff url("data:imag
 textarea{ resize:vertical; min-height:48px; }
 
 /* header */
-.top{ position:sticky; top:0; z-index:20; background:rgba(246,240,230,.94); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+.top{ position:sticky; top:0; z-index:20; background:rgba(247,245,239,.94); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
   padding:calc(10px + var(--safe-t)) 16px 10px; border-bottom:1px solid var(--line); }
 .brand{ display:flex; gap:10px; align-items:center; max-width:720px; margin:0 auto; }
-.brand-mark{ width:36px; height:36px; border-radius:10px; background:var(--rust); color:#fffaf2; display:grid; place-items:center; flex:none; }
+.brand-mark{ width:38px; height:38px; border-radius:10px; overflow:hidden; flex:none; box-shadow:0 1px 3px rgba(0,0,0,.12); }
+.brand-mark img{ width:100%; height:100%; display:block; }
 .brand-mark svg{ width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .receipt-btn>svg{ width:30px; height:30px; fill:none; stroke:var(--rust); stroke-width:1.6; }
 .receipt-btn.has>svg{ display:none; }
-.brand h1{ font-size:21px; line-height:1.1; }
+.brand h1{ font-family:var(--script); font-weight:400; font-size:31px; line-height:1; letter-spacing:0; }
 .sync{ font-size:12.5px; color:var(--muted); display:flex; align-items:center; gap:6px; }
 .sync-dot{ width:7px; height:7px; border-radius:50%; background:var(--line2); }
 .sync-dot.ok{ background:#6c9a5b; } .sync-dot.warn{ background:var(--mustard); } .sync-dot.err{ background:var(--red); }
@@ -105,12 +106,12 @@ main{ max-width:720px; margin:0 auto; padding:14px 16px 20px; }
 .pill-select{ width:auto; border-radius:999px; padding:7px 30px 7px 13px; font-size:14px; font-weight:600; background-position:right 11px center; }
 
 /* bottom tabs + add button */
-.tabs{ position:fixed; left:0; right:0; bottom:0; z-index:30; background:rgba(255,250,242,.96); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-top:1px solid var(--line);
+.tabs{ position:fixed; left:0; right:0; bottom:0; z-index:30; background:rgba(255,254,250,.96); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-top:1px solid var(--line);
   display:flex; justify-content:center; padding:6px 8px calc(6px + var(--safe-b)); }
 .tabs button{ flex:1; max-width:140px; background:none; border:0; display:flex; flex-direction:column; align-items:center; gap:2px; font-size:11.5px; font-weight:600; color:var(--muted); padding:6px 0; cursor:pointer; }
 .tabs svg{ width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linejoin:round; stroke-linecap:round; }
 .tabs button.active{ color:var(--rust); }
-.fab{ position:fixed; right:max(18px, calc(50% - 342px)); bottom:calc(80px + var(--safe-b)); z-index:31; width:58px; height:58px; border-radius:50%; border:0; background:var(--rust); color:#fff; font-size:32px; font-weight:300; box-shadow:0 6px 20px rgba(140,60,30,.35); cursor:pointer; transition:transform .2s; }
+.fab{ position:fixed; right:max(18px, calc(50% - 342px)); bottom:calc(80px + var(--safe-b)); z-index:31; width:58px; height:58px; border-radius:50%; border:0; background:var(--rust); color:#fff; font-size:32px; font-weight:300; box-shadow:0 6px 20px rgba(60,90,40,.35); cursor:pointer; transition:transform .2s; }
 .fab.open{ transform:rotate(45deg); background:var(--ink); }
 .fab-menu{ position:fixed; right:max(18px, calc(50% - 342px)); bottom:calc(148px + var(--safe-b)); z-index:31; display:flex; flex-direction:column; gap:8px; opacity:0; pointer-events:none; transform:translateY(8px); transition:.18s; }
 .fab-menu.open{ opacity:1; pointer-events:auto; transform:none; }
@@ -133,7 +134,7 @@ main{ max-width:720px; margin:0 auto; padding:14px 16px 20px; }
 .shot{ border:1.5px dashed var(--line2); background:var(--card); border-radius:12px; padding:10px 4px 8px; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:12.5px; font-weight:600; color:var(--ink2); cursor:pointer; position:relative; }
 .shot svg{ width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.6; }
 .shot.done{ border-style:solid; border-color:var(--sage); background:var(--sage-bg); color:var(--sage); }
-.shot.next{ border-color:var(--rust); color:var(--rust); background:var(--rust-bg); }
+.shot.next{ border-color:var(--mustard); color:#7a5a10; background:var(--mustard-bg); }
 .shot .n{ position:absolute; top:4px; right:6px; font-size:11px; }
 .photo-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(92px,1fr)); gap:8px; margin-top:10px; }
 .photo-grid figure{ margin:0; position:relative; aspect-ratio:1; border-radius:10px; overflow:hidden; background:var(--line); }
@@ -145,7 +146,7 @@ main{ max-width:720px; margin:0 auto; padding:14px 16px 20px; }
 
 /* dictation */
 .mic-card{ display:flex; gap:14px; align-items:center; background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:12px; }
-.mic-btn{ width:64px; height:64px; flex:none; border-radius:50%; border:0; background:var(--rust); color:#fff; display:grid; place-items:center; cursor:pointer; box-shadow:0 4px 14px rgba(140,60,30,.3); }
+.mic-btn{ width:64px; height:64px; flex:none; border-radius:50%; border:0; background:var(--rust); color:#fff; display:grid; place-items:center; cursor:pointer; box-shadow:0 4px 14px rgba(60,90,40,.3); }
 .mic-btn svg{ width:28px; height:28px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; }
 .mic-btn.on{ background:var(--red); animation:pulse 1.3s infinite; }
 @keyframes pulse{ 0%{ box-shadow:0 0 0 0 rgba(166,58,43,.45);} 70%{ box-shadow:0 0 0 16px rgba(166,58,43,0);} 100%{ box-shadow:0 0 0 0 rgba(166,58,43,0);} }
@@ -193,7 +194,7 @@ main{ max-width:720px; margin:0 auto; padding:14px 16px 20px; }
 .receipt-btn img{ max-height:180px; max-width:100%; border-radius:8px; margin-bottom:6px; }
 .receipt-btn.has{ border-style:solid; border-color:var(--sage); }
 .tape{ display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
-.tape button{ font-family:var(--mono); font-size:16px; background:#efe3c8; border:0; padding:8px 12px; border-radius:3px; transform:rotate(-1.2deg); box-shadow:0 1px 2px rgba(0,0,0,.12); cursor:pointer; color:var(--ink); }
+.tape button{ font-family:var(--mono); font-size:16px; background:#efe6c9; border:0; padding:8px 12px; border-radius:3px; transform:rotate(-1.2deg); box-shadow:0 1px 2px rgba(0,0,0,.12); cursor:pointer; color:var(--ink); }
 .tape button:nth-child(even){ transform:rotate(1deg); }
 .tape button small{ display:block; font-family:var(--sans); font-size:11px; color:var(--ink2); }
 

@@ -1,5 +1,5 @@
 {
-  "name": "vintage-shop",
+  "name": "serendipity-vintage",
   "version": "1.0.0",
   "private": true,
   "description": "Intake, listing prep and bookkeeping for a vintage clothing shop. Runs in the browser; data lives in Dropbox.",

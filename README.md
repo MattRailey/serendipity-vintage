@@ -1,10 +1,10 @@
-# Vintage Shop
+# Serendipity Vintage
 
 A phone-first helper for a vintage clothing shop. Each piece gets a code and its photos, with measurements dictated out loud. Claude writes the Etsy and Vinted listings. Receipts, costs, mileage and sales roll up into a year-end summary for taxes.
 
 There is no server and no account: the app runs in the browser, and everything is saved in one Dropbox folder.
 
-- **App:** https://mattrailey.github.io/tamarack-vintage/vintage-shop
+- **App:** https://mattrailey.github.io/serendipity-vintage/vintage-shop
 - **How Claude works with the folder:** [CLAUDE.md](CLAUDE.md)
 - **Listing/SEO playbook:** [LISTING-GUIDE.md](LISTING-GUIDE.md)
 - **For developers:** [DEVELOPER.md](DEVELOPER.md)
@@ -30,9 +30,9 @@ There is no server and no account: the app runs in the browser, and everything i
 1. **Create a Dropbox app** at [dropbox.com/developers/apps](https://www.dropbox.com/developers/apps). You can reuse the library's Dropbox app if you prefer.
    - Choose *Scoped access* and *Full Dropbox*.
    - Under Permissions, tick `files.content.read` and `files.content.write`, then click Submit.
-   - Under Settings, add the redirect URI `https://mattrailey.github.io/tamarack-vintage/vintage-shop`.
+   - Under Settings, add the redirect URI `https://mattrailey.github.io/serendipity-vintage/vintage-shop`.
    - Copy the **App key**.
-2. **Connect your own phone or computer.** Open the app, go to **Settings → Dropbox**, paste the app key, tap **Connect Dropbox**, and sign in. The shop folder is `/Vintage Shop`.
+2. **Connect your own phone or computer.** Open the app, go to **Settings → Dropbox**, paste the app key, tap **Connect Dropbox**, and sign in. The shop folder is `/Serendipity Vintage`.
 3. **Set up her iPhone.**
    - In Settings, tap **Copy set-up link for another phone** and send her the link.
    - She opens it in Safari and taps **Connect Dropbox**. Sign in with your Dropbox; it stays signed in.

@@ -1,4 +1,4 @@
-/* Vintage Shop — speech.js
+/* Serendipity Vintage — speech.js
    Turns spoken measurements ("pit to pit eighteen and a half, length twenty seven,
    small pinhole left cuff") into fields, and runs the microphone.
    parseDictation() is pure (no page needed) so it can be tested in Node: see tests/parse.check.js. */

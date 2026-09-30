@@ -1,8 +1,8 @@
-/* Vintage Shop — service worker: keeps the app usable with no signal.
+/* Serendipity Vintage — service worker: keeps the app usable with no signal.
    App files: network first (so updates show on the next open), falling back to the saved copy.
    Fonts: cache first. Dropbox requests are never touched.
    When you add, rename or remove an app file, update APP_FILES and bump VERSION. */
-const VERSION = 'vintage-shop-v1';
+const VERSION = 'serendipity-v1';
 const APP_FILES = [
   'vintage-shop.html', 'css/app.css',
   'js/core.js', 'js/dropbox.js', 'js/speech.js', 'js/pieces.js', 'js/piece.js', 'js/hauls.js', 'js/money.js', 'js/settings.js', 'js/app.js',

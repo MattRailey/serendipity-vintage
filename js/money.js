@@ -1,4 +1,4 @@
-/* Vintage Shop — money.js
+/* Serendipity Vintage — money.js
    The year at a glance for taxes (Schedule C style): sales, fees, cost of goods sold, expenses,
    mileage, inventory on hand, a to-do list of missing records, and CSV exports.
    Not tax advice; it organizes the numbers for whoever prepares the return. See DEVELOPER.md. */
@@ -71,7 +71,7 @@ $('money-year').onchange=renderMoney;
 function csv(rows){ return rows.map(r=>r.map(v=>{ v=v==null?'':String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }).join(',')).join('\n'); }
 function download(name, text, type){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:type||'text/csv'})); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500); }
 function downloadSummary(Y, n){
-  const rows=[['Vintage Shop — '+Y+' summary', ''], ['',''], ['Gross sales', round2(n.gross)], ['Fees & consignment cut (per piece)', round2(n.pieceFees)], ['Shipping labels', round2(n.ship)], ['Cost of goods sold', round2(n.cogs)]];
+  const rows=[['Serendipity Vintage — '+Y+' summary', ''], ['',''], ['Gross sales', round2(n.gross)], ['Fees & consignment cut (per piece)', round2(n.pieceFees)], ['Shipping labels', round2(n.ship)], ['Cost of goods sold', round2(n.cogs)]];
   for(const [k,v] of Object.entries(n.expBy)) rows.push([EXP_LABEL[k]||k, round2(v)]);
   rows.push(['Business miles', Math.round(n.miles)], ['Mileage rate', n.rate], ['Mileage deduction', n.mileDed], ['Estimated net profit', round2(n.profit)], ['',''], ['Purchases during year', round2(n.purchases)], ['Ending inventory at cost', round2(n.inventory)], ['Pieces on hand at year end', n.onHand.length]);
   download('vintage-shop-'+Y+'-summary.csv', csv(rows));
