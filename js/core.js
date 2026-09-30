@@ -14,7 +14,7 @@
    ============================================================ */
 const COLS = ['items', 'hauls', 'expenses', 'stores'];
 const FOLDER_KEY = 'tamarack_vintage_folder';
-(function(){ // set-up link: ?folder=/Serendipity Vintage&appkey=abc123 prepares a phone in one tap
+(function(){ // set-up link: ?folder=/Workspace/Serendipity Vintage&appkey=abc123 prepares a phone in one tap
   const q=new URLSearchParams(location.search); if(q.has('code') || !q.has('folder')) return;
   let f=q.get('folder').trim(); if(!f.startsWith('/')) f='/'+f; f=f.replace(/\/+$/,'');
   try{ localStorage.setItem(FOLDER_KEY, f); if(q.has('appkey')) localStorage.setItem('tamarack_vintage_dropbox_appkey', q.get('appkey').trim()); }catch(e){}
@@ -29,7 +29,7 @@ const DEFAULT_DBX_APP_KEY = '';
 const DBX_APPKEY_KEY   = 'tamarack_vintage_dropbox_appkey';
 const DBX_TOKENS_KEY   = 'tamarack_vintage_dropbox_tokens';
 const DBX_VERIFIER_KEY = 'tamarack_vintage_dropbox_pkce';
-function dbxFolder(){ let f=String(lsGet(FOLDER_KEY)||'/Serendipity Vintage').trim().replace(/\\/g,'/').replace(/\/+$/,''); if(!f.startsWith('/')) f='/'+f; return f||'/Serendipity Vintage'; }
+function dbxFolder(){ let f=String(lsGet(FOLDER_KEY)||'/Workspace/Serendipity Vintage').trim().replace(/\\/g,'/').replace(/\/+$/,''); if(!f.startsWith('/')) f='/'+f; return f||'/Workspace/Serendipity Vintage'; }
 function dbxArg(o){ return JSON.stringify(o).replace(/[\u007f-￿]/g,c=>'\\u'+('000'+c.charCodeAt(0).toString(16)).slice(-4)); }
 function dbxPath(){ return dbxFolder()+'/vintage-shop.json'; }
 function dbxAppKey(){ return (lsGet(DBX_APPKEY_KEY) || DEFAULT_DBX_APP_KEY || '').trim(); }

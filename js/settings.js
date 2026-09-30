@@ -24,7 +24,7 @@ $('rate-list').addEventListener('change', e=>{ const i=e.target.closest('[data-r
 $('store-list').onclick=e=>{ const r=e.target.closest('[data-store]'); if(r) editStore(r.dataset.store); };
 $('btn-add-store').onclick=()=>editStore(null);
 $('set-folder').onchange=e=>{
-  let f=e.target.value.trim()||'/Serendipity Vintage'; if(!f.startsWith('/')) f='/'+f; f=f.replace(/\/+$/,'');
+  let f=e.target.value.trim()||'/Workspace/Serendipity Vintage'; if(!f.startsWith('/')) f='/'+f; f=f.replace(/\/+$/,'');
   if(f===dbxFolder()) return;
   if(!confirm('Use '+f+' as the shop folder on this device? The app will reload and sync with that folder.')){ e.target.value=dbxFolder(); return; }
   lsSet(FOLDER_KEY, f); lsSet(SYNCED_KEY, ''); location.reload();
