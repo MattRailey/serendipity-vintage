@@ -8,7 +8,7 @@ The files in `js/` are **classic scripts loaded with `defer` in a fixed order**.
 |---|---|
 | `core.js` | Helpers and local dates. The on-device store (IndexedDB, falling back to localStorage). Per-field change stamps (`ft`). Record-by-record merge across `items`, `hauls`, `expenses` and `stores`. `commit()`. Piece codes. IRS mileage rates. |
 | `dropbox.js` | OAuth PKCE sign-in. Revision-checked sync of `vintage-shop.json`. The **photo upload queue**: photos wait in IndexedDB until online. Thumbnails. |
-| `speech.js` | `parseDictation()`, which turns one spoken phrase into fields (tested in Node). The iPhone speech-recognition mic: one session that restarts itself, so the phone asks once. |
+| `speech.js` | `parseDictation()`, which turns one spoken phrase into measurements, size, a named box, a voice command, or words to place (tested in Node). Free words are never filed on their own; they only go to Notes/Condition when she says so. The iPhone speech-recognition mic: one session that restarts itself, so the phone asks once, and pauses after two minutes of silence. |
 | `pieces.js` | Statuses, venues, the Pieces list in Feed / Cards / List views. |
 | `piece.js` | The piece sheet: shot-list photos, dictation, Claude's Etsy and Vinted drafts, where it's listed, sale and profit. |
 | `hauls.js` | Hauls (receipt → coded pieces with evenly split cost, and trip miles), expenses, stores. |

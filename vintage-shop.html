@@ -132,6 +132,7 @@
     <h3 class="sec">Photos</h3>
     <div id="pc-shots" class="shots"></div>
     <div id="pc-photos" class="photo-grid"></div>
+    <button class="linkish" id="pc-savephotos" type="button">Save this piece’s photos to the phone</button>
     <input type="file" id="pc-cam" accept="image/*" capture="environment" hidden>
     <input type="file" id="pc-lib" accept="image/*" multiple hidden>
 
@@ -140,11 +141,11 @@
       <button id="pc-mic" class="mic-btn" aria-label="Dictate measurements"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button>
       <div class="mic-text">
         <b id="pc-mic-label">Tap and talk</b>
-        <span class="muted small" id="pc-mic-hint">“Tag size medium, pit to pit eighteen and a half, length twenty-seven, small pinhole left cuff.”</span>
-        <button class="linkish" id="pc-walk" type="button">Or: walk me through each box — just say the numbers</button>
+        <span class="muted small" id="pc-mic-hint">“Tag size medium, pit to pit eighteen and a half, length twenty-seven.” Or say a box’s name, then the number. Say “notes …” or “flaw …” to add to those boxes.</span>
+        <button class="linkish" id="pc-walk" type="button">Walk me through each box</button>
       </div>
     </div>
-    <textarea id="pc-dict" rows="2" placeholder="What you say lands here. You can also type, or use the mic on the keyboard."></textarea>
+    <textarea id="pc-dict" rows="2" placeholder="Everything you say is kept here. You can also type, or use the mic on the keyboard."></textarea>
     <div id="pc-interim" class="interim"></div>
     <div id="pc-heard"></div>
     <div class="grid2">
@@ -153,8 +154,8 @@
     </div>
     <div id="pc-meas" class="meas-grid"></div>
     <button class="linkish" id="pc-more-meas">+ other measurement</button>
-    <label class="fld"><span>Condition &amp; flaws</span><textarea id="pc-cond" rows="2" placeholder="Pinhole near left cuff (see photo)"></textarea></label>
-    <label class="fld"><span>Notes for Claude</span><textarea id="pc-notes" rows="2" placeholder="Brand, fabric, anything you already know"></textarea></label>
+    <label class="fld tfld" id="pc-cond-fld"><span>Condition &amp; flaws</span><textarea id="pc-cond" rows="2" placeholder="Pinhole near left cuff (see photo). With the mic on, tap here or say “flaw …”"></textarea></label>
+    <label class="fld tfld" id="pc-notes-fld"><span>Notes for Claude</span><textarea id="pc-notes" rows="2" placeholder="Brand, fabric, anything you already know. With the mic on, tap here or say “notes …”"></textarea></label>
 
     <button class="btn wide" id="pc-ready">Ready for Claude</button>
 

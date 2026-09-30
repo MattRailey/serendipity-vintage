@@ -17,7 +17,12 @@ There is no server and no account: the app runs in the browser, and everything i
    - The cost is split evenly across the pieces, and the trip's miles fill in from the store list.
 2. **At home, for each piece:**
    - Open it and tap the shot buttons: **Front, Back, Brand tag, Care tag**, then any detail or flaw shots.
-   - Tap the **mic** and say the measurements, e.g. *"tag size medium, pit to pit eighteen and a half, length twenty-seven, small pinhole left cuff."*
+   - Tap the **mic** and say the measurements, e.g. *"tag size medium, pit to pit eighteen and a half, length twenty-seven."*
+     - Or say a box's name, read the tape, then say the number: *"length" … "twenty-seven."*
+     - *"Notes, union label, made in USA"* or *"flaw, pinhole left cuff"* puts words in those boxes. With the mic on, tapping the Notes or Condition box does the same.
+     - Anything else she says isn't filed. It waits under **Not placed yet** with Notes / Condition / ✕ buttons, and it stays in the transcript.
+     - Say *"next"*, *"undo"*, *"stop"* or *"walk me through"* as commands.
+   - To list from the phone, tap **Save this piece's photos to the phone** (two taps: it gathers them, then the share sheet → *Save Images*).
    - Tap **Ready for Claude**.
 3. **Ask Claude to "check the shop folder."** The Etsy and Vinted drafts (title, 13 tags, attributes, description, price range and comps) appear on each piece, with copy buttons. From the desktop app, Claude can also fill in the Etsy or Vinted listing form for you to review and publish.
 4. **When you list it,** turn on **Etsy / Vinted / Consignment** under *Where it's listed*.

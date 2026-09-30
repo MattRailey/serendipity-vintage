@@ -180,6 +180,7 @@ async function processQueue(){
 }
 async function updateQueueBadge(){
   let n=0; try{ n=(await idbKeys('q:')).length; }catch(e){}
+  if(typeof updateReadyBtn==='function' && typeof curId!=='undefined' && curId) updateReadyBtn();
   const b=$('queue-note'); if(!b) return;
   b.classList.toggle('hide', !n);
   b.textContent = n+' photo'+(n===1?'':'s')+' waiting to upload'+(navigator.onLine===false?' (offline)':'');
@@ -206,6 +207,16 @@ function thumbImg(path, cls){
   const u=photoUrl(path); if(!u) setTimeout(()=>loadThumb(path), 0);
   return '<img class="'+(cls||'')+'" data-path="'+esc(path)+'" src="'+esc(u)+'" alt="" loading="lazy">';
 }
+// The full photo, for saving to the phone: from the upload queue if it hasn't gone up yet, otherwise from Dropbox.
+async function photoBlob(path){
+  try{ const q=await idbGet('q:'+path); if(q && q.blob) return q.blob; }catch(e){}
+  const t=await dbxToken(); if(!t) throw new Error('not connected to Dropbox');
+  const r=await fetch('https://content.dropboxapi.com/2/files/download', { method:'POST', headers:{ 'Authorization':'Bearer '+t.access_token, 'Dropbox-API-Arg':dbxArg({path}) } });
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return await r.blob();
+}
+// Photos of a piece still waiting on this phone to upload
+async function pendingPhotos(it){ let keys=[]; try{ keys=await idbKeys('q:'); }catch(e){} const w=new Set(keys.map(k=>k.slice(2))); return (it.photos||[]).filter(p=>w.has(p.path)).length; }
 async function openFullPhoto(path){
   let url='';
   try{ const q=await idbGet('q:'+path); if(q) url=URL.createObjectURL(q.blob); }catch(e){}

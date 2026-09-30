@@ -2,7 +2,7 @@
    App files: network first (so updates show on the next open), falling back to the saved copy.
    Fonts: cache first. Dropbox requests are never touched.
    When you add, rename or remove an app file, update APP_FILES and bump VERSION. */
-const VERSION = 'serendipity-v3';
+const VERSION = 'serendipity-v4';
 const APP_FILES = [
   'vintage-shop.html', 'css/app.css',
   'js/core.js', 'js/dropbox.js', 'js/speech.js', 'js/camera.js', 'js/pieces.js', 'js/piece.js', 'js/hauls.js', 'js/money.js', 'js/settings.js', 'js/app.js',

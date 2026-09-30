@@ -21,6 +21,8 @@ imports/                     Claude's change logs (one file per run)
 
 1. Read `vintage-shop.json`. Work on items with `status: "ready"`.
 2. For each item, look at its photos:
+   - **Use only the photos listed in `item.photos`.** Don't browse the piece folder: it can hold photos from a deleted piece that had the same code.
+   - If a listed photo isn't in Dropbox yet (still uploading from her phone), skip that piece this run and say so in the log. It stays `ready` for next time.
    - **Tags first** (`tag`, `care`). Identify the brand and date the piece from:
      - union labels, RN/WPL/CA numbers;
      - care-tag format, fiber content, country of origin;
@@ -33,6 +35,8 @@ imports/                     Claude's change logs (one file per run)
    - every attribute filled;
    - the modern size worked out from the measurements.
    - Use her `measurements`, `size`, `condition` and `notes` fields as given. Don't invent measurements. If something needed is missing, say so in `listing.questions`.
+   - `dictation` is the full transcript of what she said. Anything she didn't file into a box is only there. Treat it as a hint, never as a fact: if it mentions a flaw or detail that isn't in `condition` or `notes`, ask about it in `listing.questions` rather than putting it in the listing.
+   - `listing.questions` shows on the piece in the app, so write each one as a short, plain question to her.
 5. Set `status: "draft"`, bump `updatedAt` (ms), and stamp the changed fields in `ft` (`ft.listing`, `ft.status` = the same time).
 6. Save safely, the same way the app does:
    - Re-read the file just before writing.

@@ -47,6 +47,8 @@ test('piece: dictation fills measurements, photos go to the piece folder', async
   await expect(page.locator('[data-m="pit"]')).toHaveValue('18½"');
   await expect(page.locator('[data-m="sleeve"]')).toHaveValue('24¼"');
   await expect(page.locator('#pc-size')).toHaveValue('M');
+  await expect(page.locator('#pc-cond')).toHaveValue('');                 // not filed until she says where
+  await page.click('.utext [data-to="condition"]');
   await expect(page.locator('#pc-cond')).toHaveValue(/Small pinhole near left cuff/);
   for (const shot of ['front', 'back']) { const fc = page.waitForEvent('filechooser'); await page.click(`[data-shot="${shot}"]`); await (await fc).setFiles(JPG); await expect(page.locator('#pc-photos figure img')).toHaveCount(shot === 'front' ? 1 : 2); }
   await expect(page.locator('[data-shot="tag"]')).toHaveClass(/next/);

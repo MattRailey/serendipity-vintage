@@ -1,6 +1,6 @@
 // Dictation accuracy, the "Just heard" tray, the mic session, and the Feed / Cards / List pieces views.
 const { test, expect } = require('@playwright/test');
-const { mockNet, openApp, baseStore } = require('./helpers');
+const { mockNet, openApp, baseStore, JPG } = require('./helpers');
 
 function watchErrors(page) { const errs = []; page.on('pageerror', e => errs.push(e.message)); return errs; }
 // A fake speech recognizer the test can talk through. It counts how many times the phone was asked to start.
@@ -38,15 +38,16 @@ test('a number said with no name waits for a choice, and Undo puts everything ba
   await expect(page.locator('[data-m="pit"]')).toHaveValue('18½"');
   await page.fill('#pc-dict', 'eighteen and a half, tag size large, faint stain on hem'); await page.locator('#pc-dict').blur();
   await expect(page.locator('#pc-size')).toHaveValue('L');
-  await expect(page.locator('#pc-cond')).toHaveValue(/Faint stain on hem/);
+  await expect(page.locator('#pc-cond')).toHaveValue('');                        // not filed on its own
+  await expect(page.locator('.utext')).toContainText('Faint stain on hem');
   await page.click('#pc-heard [data-undo]');
-  await expect(page.locator('#pc-size')).toHaveValue(''); await expect(page.locator('#pc-cond')).toHaveValue('');
+  await expect(page.locator('#pc-size')).toHaveValue(''); await expect(page.locator('.utext')).toHaveCount(0);
   expect(errs).toEqual([]);
 });
 
 test('a condition line can be moved to notes from the tray', async ({ page }) => {
   await mockNet(page); await openApp(page); await newPiece(page);
-  await page.fill('#pc-dict', 'small pinhole left cuff'); await page.locator('#pc-dict').blur();
+  await page.fill('#pc-dict', 'flaw small pinhole left cuff'); await page.locator('#pc-dict').blur();
   await expect(page.locator('#pc-cond')).toHaveValue(/Small pinhole left cuff/);
   await page.click('#pc-heard [data-mv="0"]');
   await expect(page.locator('#pc-cond')).toHaveValue(''); await expect(page.locator('#pc-notes')).toHaveValue(/Small pinhole left cuff/);
@@ -122,5 +123,62 @@ test('mic: tap a box, speak, tap the next box straight away — the words go to 
   await page.evaluate(() => window.__say([['twenty seven', true]]));
   await expect(page.locator('[data-m="length"]')).toHaveValue('27"');
   await expect(page.locator('#pc-mic')).toHaveClass(/on/);
+  expect(errs).toEqual([]);
+});
+
+test('talking it through: a box name then the number, "notes", unplaced words wait for a tap, voice undo', async ({ page }) => {
+  const errs = watchErrors(page); await fakeMic(page); await mockNet(page); await openApp(page); await newPiece(page);
+  await page.click('#pc-mic');
+  const say = async (...phrases) => { await page.evaluate(p => { window.__said = (window.__said || []).concat(p); window.__say(window.__said.map(t => [t, true])); }, phrases); };
+  await say('Length');
+  await expect(page.locator('#pc-mic-label')).toContainText('Listening for Length');
+  await say('27');
+  await expect(page.locator('[data-m="length"]')).toHaveValue('27"');
+  await say("This is a Carhartt men's shirt in good condition it's a medium");
+  await expect(page.locator('#pc-size')).toHaveValue('M');
+  await expect(page.locator('#pc-notes')).toHaveValue(''); await expect(page.locator('#pc-cond')).toHaveValue('');
+  await expect(page.locator('.utext')).toContainText('Carhartt');
+  await page.click('.utext [data-to="notes"]');
+  await expect(page.locator('#pc-notes')).toHaveValue(/Carhartt men's shirt/);
+  await expect(page.locator('.utext')).toHaveCount(0);
+  // tap the Condition box with the mic on: words go there, no keyboard
+  await page.click('#pc-cond-fld');
+  await expect(page.locator('#pc-mic-label')).toContainText('Listening for Condition');
+  await expect(page.locator('#pc-cond')).not.toBeFocused();
+  await say('tiny pinhole near left cuff');
+  await expect(page.locator('#pc-cond')).toHaveValue(/Tiny pinhole near left cuff/);
+  await say('undo');
+  await expect(page.locator('#pc-cond')).toHaveValue('');
+  // "notes …" said out loud
+  await say('notes union label, made in USA');
+  await expect(page.locator('#pc-notes')).toHaveValue(/Union label\nMade in USA/);
+  await say('stop');
+  await expect(page.locator('#pc-mic')).not.toHaveClass(/on/);
+  expect(errs).toEqual([]);
+});
+
+test('a deleted piece’s code is never handed out again', async ({ page }) => {
+  await mockNet(page); await openApp(page);
+  await page.click('#fab'); await page.click('[data-add="piece"]');
+  const first = (await page.textContent('#pc-code')).trim();
+  page.once('dialog', d => d.accept()); await page.click('#pc-delete');
+  await page.click('#fab'); await page.click('[data-add="piece"]');
+  const second = (await page.textContent('#pc-code')).trim();
+  expect(second).not.toBe(first);
+});
+
+test('Ready says when photos are still waiting to upload; photos save to the phone in listing order', async ({ page }) => {
+  const errs = watchErrors(page); await mockNet(page);
+  await page.context().route('**/2/files/upload', route => { const a = JSON.parse(route.request().headers()['dropbox-api-arg']); return a.path.endsWith('.jpg') ? route.abort() : route.fallback(); });
+  await page.addInitScript(() => { navigator.canShare = () => true; navigator.share = async d => { window.__shared = d.files.map(f => f.name); }; });
+  await openApp(page); await newPiece(page);
+  const code = (await page.textContent('#pc-code')).trim();
+  for (const shot of ['back', 'front']) { const fc = page.waitForEvent('filechooser'); await page.click(`[data-shot="${shot}"]`); await (await fc).setFiles(JPG); }
+  await expect(page.locator('#pc-photos figure img')).toHaveCount(2);
+  await expect(page.locator('#pc-ready')).toContainText('2 photos still uploading');
+  await page.click('#pc-savephotos');
+  await expect(page.locator('#pc-savephotos')).toContainText('Tap to save 2 photos');
+  await page.click('#pc-savephotos');
+  await expect.poll(() => page.evaluate(() => window.__shared)).toEqual([`${code} 02 front.jpg`, `${code} 01 back.jpg`]);
   expect(errs).toEqual([]);
 });

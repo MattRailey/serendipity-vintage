@@ -130,7 +130,8 @@ function commit(){
 function touch(r){ r.updatedAt=Math.max(Date.now(), (r.updatedAt||0)+1); return r; }
 function liveOf(c){ return store[c].filter(r=>!r.deleted); }
 function getRec(c,id){ return store[c].find(r=>r.id===id && !r.deleted); }
-function removeRec(c,id){ const i=store[c].findIndex(r=>r.id===id); if(i>=0) store[c][i]={ id, deleted:true, updatedAt:Date.now() }; }
+// A deleted piece keeps its code so the code is never handed out again (its photos folder may still hold its photos).
+function removeRec(c,id){ const i=store[c].findIndex(r=>r.id===id); if(i>=0){ const old=store[c][i]; store[c][i]={ id, deleted:true, updatedAt:Date.now() }; if(old.code) store[c][i].code=old.code; } }
 function setting(k, dflt){ const v=(store.settings||{})[k]; return v==null||v==='' ? dflt : v; }
 function setSetting(k, v){ store.settings=Object.assign({}, store.settings, {[k]:v, updatedAt:Date.now()}); }
 
