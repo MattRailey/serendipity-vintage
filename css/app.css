@@ -248,3 +248,42 @@ main{ max-width:720px; margin:0 auto; padding:14px 16px 20px; }
 @keyframes camflash{ from{ opacity:.75 } to{ opacity:0 } }
 .cam-msg{ position:absolute; z-index:4; left:24px; right:24px; top:30%; background:var(--card); color:var(--ink); border-radius:16px; padding:18px; text-align:center; display:flex; flex-direction:column; gap:10px; }
 .cam-msg p{ margin:0; font-weight:600; }
+
+/* pieces: Feed / Cards / List */
+.search-row{ display:flex; gap:10px; align-items:center; }
+.search-row .search{ flex:1; min-width:0; } .search-row .seg{ flex:none; }
+.feed{ max-width:560px; margin:0 auto; display:flex; flex-direction:column; gap:18px; }
+.post{ background:var(--card); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden; cursor:pointer; }
+.post-art{ aspect-ratio:4/5; background:linear-gradient(135deg,#efe6d8,#e6dac8); position:relative; display:grid; place-items:center; color:var(--line2); }
+.post-art img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.post-art svg{ width:64px; height:64px; fill:none; stroke:currentColor; stroke-width:1.3; }
+.post-art .code{ position:absolute; left:10px; top:10px; }
+.post-body{ padding:12px 14px 14px; }
+.post-body h4{ margin:0; font-family:var(--serif); font-size:19px; line-height:1.25; }
+.post-body .pr{ font-size:17px; white-space:nowrap; }
+.post-body .meta{ display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; margin-top:8px; font-size:13.5px; color:var(--muted); }
+.flag{ margin-top:8px; font-size:12.5px; font-weight:700; color:var(--red); background:#f7d9d3; border-radius:8px; padding:3px 8px; }
+.plist{ display:flex; flex-direction:column; background:var(--card); border:1px solid var(--line); border-radius:var(--r); overflow:hidden; }
+.plist .lr{ display:flex; gap:12px; align-items:center; padding:9px 12px; border-top:1px solid var(--line); cursor:pointer; }
+.plist .lr:first-child{ border-top:0; } .plist .lr:active{ background:var(--paper); }
+.plist .th{ width:44px; height:56px; flex:none; border-radius:8px; overflow:hidden; background:linear-gradient(135deg,#efe6d8,#e6dac8); position:relative; display:grid; place-items:center; color:var(--line2); }
+.plist .th img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; } .plist .th svg{ width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.4; }
+.plist .t{ flex:1; min-width:0; } .plist .t b{ display:block; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.plist .t span{ display:block; font-size:12.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.plist .t .cd{ font-family:var(--mono); font-style:normal; } .plist .t .flag-i{ color:var(--red); font-weight:700; }
+.plist .rt{ display:flex; flex-direction:column; align-items:flex-end; gap:3px; font-size:13px; flex:none; }
+
+/* dictation: what was heard, and the box being listened for */
+.meas.target{ border-color:var(--red); box-shadow:0 0 0 3px rgba(166,58,43,.15); animation:pulse-b 1.3s infinite; }
+@keyframes pulse-b{ 50%{ box-shadow:0 0 0 6px rgba(166,58,43,.05); } }
+.heard{ margin-top:8px; background:var(--card); border:1.5px solid var(--line2); border-radius:12px; padding:10px 12px; font-size:14px; }
+.heard .row-between b{ font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+.hchips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+.hchip{ background:var(--sage-bg); color:var(--sage); border-radius:8px; padding:4px 9px; font-weight:600; }
+.hchip.size{ background:var(--blue-bg); color:var(--blue); }
+.hchip.cond,.hchip.note{ background:var(--mustard-bg); color:#7a5a10; } .hchip i{ font-style:normal; font-weight:700; opacity:.7; font-size:12px; margin-right:2px; }
+.hchip button{ border:0; background:rgba(0,0,0,.08); border-radius:6px; padding:0 6px; margin-left:4px; cursor:pointer; font-weight:700; }
+.hloose{ margin-top:10px; padding-top:8px; border-top:1px dashed var(--line2); } .hloose b{ font-size:18px; }
+.hpick{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+.hpick button{ border:1.5px solid var(--line2); background:#fff; border-radius:999px; padding:5px 11px; font-weight:600; font-size:13.5px; cursor:pointer; } .hpick .drop{ color:var(--muted); border-style:dashed; }
+#pc-walk{ margin-top:4px; text-align:left; }

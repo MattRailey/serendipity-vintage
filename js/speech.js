@@ -71,9 +71,9 @@ const _aliasRe = new RegExp('\\b('+_aliases.map(a=>a.n.replace(/[.*+?^${}()|[\]\
 const COND_WORDS = /\b(condition|flaw|flaws|stain|stains|stained|hole|holes|pinhole|pinholes|moth|nip|nips|tear|torn|rip|ripped|snag|snags|pull|pulls|pilling|pill|fad(e|ed|ing)|discolor\w*|yellow\w*|spot|spots|mark|marks|missing|repair\w*|mend\w*|wear|worn|distress\w*|thin|loose|broken|split|seam|odor|smell|underarm|as is|excellent|great|good|fair|mint|deadstock|nwt)\b/;
 const UNIT_RE = /^\s*(?:inches|inch|in\b|"|'')\.?/;
 
-/** Parse one dictation. Returns { m:{key:number}, size, condition:[], notes:[] }. */
+/** Parse one dictation. Returns { m:{key:number}, size, condition:[], notes:[], loose:[number] }. */
 function parseDictation(text){
-  const out={ m:{}, size:'', condition:[], notes:[] };
+  const out={ m:{}, size:'', condition:[], notes:[], loose:[] };   // loose = numbers said with no name, to place by hand
   let s=wordsToNumbers(text);
   // size: "tag size medium", "size 12 petite", "tagged 32 x 30", "marked large"
   s=s.replace(/\b(?:tag(?:ged)?\s+(?:size\s+)?|marked\s+(?:size\s+)?|label(?:ed)?\s+size\s+|size\s+)(?:is\s+|says\s+)?((?:\d{1,2}\s*(?:x|by)\s*\d{1,2})|(?:extra\s+)+(?:small|large)|x{1,3}\s*(?:small|large)|(?:\d?x{1,3}[sl])|small|medium|large|petite|onesize|os|\d{1,2}(?:\.\d)?\s*(?:w|l|r|t|p|petite|tall|long|short|regular|reg)?|[sml])\b/i,
@@ -99,8 +99,10 @@ function parseDictation(text){
     pos=h.end; const u=s.slice(pos).match(UNIT_RE); if(u) pos+=u[0].length;
   }
   rest+=s.slice(pos);
-  for(let seg of rest.split(/\s*(?:[;,.!?\n]|\band then\b|\bnext\b|\bthen\b)\s*/)){
+  // a decimal point isn't a sentence break: "18.5" must stay one number
+  for(let seg of rest.replace(/(\d)\.(\d)/g,'$1\u0001$2').split(/\s*(?:[;,.!?\n]|\band then\b|\bnext\b|\bthen\b)\s*/).map(x=>x.replace(/\u0001/g,'.'))){
     seg=seg.replace(/^(?:(?:and|also|plus|um+|uh+|okay|ok|so|no wait|wait|sorry|actually)\s+)+/,'').replace(/\s+(?:and|also)$/,'').trim();
+    if(/^[\d.\s]+$/.test(seg)){ for(const n of seg.match(/\d+(?:\.\d+)?/g)||[]) out.loose.push(Number(n)); continue; }
     if(!seg || /^(?:and|also|inches|inch|in|the|a|measured flat|flat|laying flat|lying flat|no wait|wait|sorry|actually|oops|scratch that|never ?mind|let me see|um+|uh+|okay|ok)$/.test(seg) || /^[\d.\s]+$/.test(seg)) continue;
     seg=seg.replace(/^(?:condition|conditions|flaws?|notes?)\s*(?:is|are|:)?\s*/,'');
     if(!seg) continue;
@@ -123,22 +125,54 @@ function fmtIn(v){ if(v==null||v==='') return ''; const n=Number(v); const w=Mat
 if(typeof module!=='undefined') module.exports={ parseDictation, wordsToNumbers, tidySize, fmtIn, MEAS, TYPES };
 
 /* ============================================================
-   Microphone. iPhone Safari has built-in speech recognition; if it isn't available
-   (or is refused), the box still takes the keyboard's own dictation mic.
+   Microphone. One tap starts a listening session that keeps going (it restarts itself when the phone
+   ends a recognition early) until she taps stop, closes the piece, or leaves the app — so the phone
+   asks for the microphone once, not on every phrase.
+   startMic(onPhrase, onInterim, onState)
+     onPhrase(text)      each finished phrase, exactly once
+     onInterim(text)     what's being said right now (preview only)
+     onState(state, err) 'start' | 'end' | 'idle' (nobody spoke for a while) | 'error'
+   iPhone Safari has built-in speech recognition; if it isn't available (or is refused), the box still
+   takes the keyboard's own dictation mic.
    ============================================================ */
 const SR = typeof window!=='undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
-let _rec=null, _recOn=false;
-function micSupported(){ return !!SR; }
-function startMic(onText, onState){
-  if(!SR) return false;
-  try{
-    _rec=new SR(); _rec.lang='en-US'; _rec.continuous=true; _rec.interimResults=true;
-    let finalText='';
-    _rec.onresult=e=>{ let interim=''; for(let i=e.resultIndex;i<e.results.length;i++){ const r=e.results[i]; if(r.isFinal) finalText+=r[0].transcript+', '; else interim+=r[0].transcript; } onText(finalText, interim); };
-    _rec.onerror=e=>{ onState('error', e.error); };
-    _rec.onend=()=>{ _recOn=false; onState('end'); };
-    _rec.start(); _recOn=true; onState('start');
-    return true;
-  }catch(e){ return false; }
+let _rec=null, _want=false, _restartT=null, _pending=false, _stateCb=null, _micDenied=false;
+const MIC_IDLE_RESTARTS = 4;      // restarts in a row with nothing said → stop, so it doesn't listen all afternoon
+function micSupported(){ return !!SR && !_micDenied; }
+function micOn(){ return _want; }
+function startMic(onPhrase, onInterim, onState){
+  if(!SR || _micDenied) return false;
+  _want=true; _stateCb=onState; let quiet=0, first=true;
+  const begin=()=>{
+    let sent=''; const rec=_rec=new SR();
+    rec.lang='en-US'; rec.continuous=true; rec.interimResults=true;
+    rec.onresult=e=>{
+      // Rebuild from every result each time: some phones repeat earlier phrases in later events, so adding
+      // up event by event would say things twice. Only what's new since last time is handed on.
+      let fin='', interim='';
+      for(let i=0;i<e.results.length;i++){ const r=e.results[i]; if(r.isFinal) fin+=r[0].transcript+' '; else interim+=r[0].transcript; }
+      fin=fin.replace(/\s+/g,' ').trim(); quiet=0;
+      if(fin.length>sent.length && fin.startsWith(sent)){ const add=fin.slice(sent.length).trim(); sent=fin; if(add) onPhrase(add); }
+      else if(fin.length>sent.length) sent=fin;
+      onInterim(interim.trim());
+    };
+    rec.onerror=e=>{
+      if(e.error==='no-speech' || e.error==='aborted') return;            // normal; onend decides what happens next
+      _want=false;
+      if(e.error==='not-allowed' || e.error==='service-not-allowed') _micDenied=true;   // don't pester again this visit
+      onState('error', e.error);
+    };
+    rec.onend=()=>{
+      if(_rec!==rec) return;
+      if(_want){
+        if(++quiet>MIC_IDLE_RESTARTS){ _want=false; onInterim(''); onState('idle'); return; }
+        _pending=true; _restartT=setTimeout(()=>{ _pending=false; if(_want){ try{ begin(); }catch(err){ _want=false; onState('end'); } } }, 250);
+      } else { onInterim(''); onState('end'); }
+    };
+    rec.start();
+    if(first){ first=false; onState('start'); }
+  };
+  try{ begin(); return true; }catch(e){ _want=false; return false; }
 }
-function stopMic(){ try{ _rec && _rec.stop(); }catch(e){} _recOn=false; }
+function stopMic(){ _want=false; clearTimeout(_restartT); if(_pending){ _pending=false; _stateCb&&_stateCb('end'); } try{ _rec && _rec.stop(); }catch(e){} }
+if(typeof document!=='undefined') document.addEventListener('visibilitychange', ()=>{ if(document.hidden && _want) stopMic(); });

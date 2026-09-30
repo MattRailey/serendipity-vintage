@@ -58,16 +58,35 @@ function renderPieces(){
     return;
   }
   if(!list.length){ $('piece-list').innerHTML='<div class="empty">Nothing matches.</div>'; return; }
+  const view = ['feed','grid','list'].includes(ui.view) ? ui.view : 'grid';
+  $('piece-list').className = view==='feed' ? 'feed' : view==='list' ? 'plist' : 'cards';
   $('piece-list').innerHTML=list.map(it=>{
     const ph=firstPhoto(it), stale=staleVenues(it).length;
     const lp=liveVenues(it).map(v=>num(it.live[v].price)).find(v=>v!=null);
     const right = it.status==='sold' ? money(it.soldPrice) : lp!=null ? money(lp) : (num(it.cost)!=null ? '<span class="muted" title="what you paid">'+money(it.cost)+'</span>' : '');
     const venues = it.status==='listed' ? liveVenues(it).map(v=>VENUE_LABEL[v]).join(' · ') : STATUS_LABEL[it.status];
+    const pill = '<span class="pill st-'+it.status+'">'+esc(venues||STATUS_LABEL[it.status])+'</span>';
+    const flag = stale ? '<div class="flag">Still live on '+staleVenues(it).map(v=>VENUE_LABEL[v]).join(', ')+'</div>' : '';
+    const R=(it.listing||{}).research||{};
+    const facts=[it.size && 'Size '+it.size, R.era||it.era, R.brand].filter(Boolean).join(' · ');
+    if(view==='feed'){
+      const meas=Object.entries(it.measurements||{}).slice(0,5).map(([k,v])=>esc(MEAS_LABEL[k]||k)+' '+fmtIn(v)+'"').join(' · ');
+      return '<article class="post" data-id="'+it.id+'"><div class="post-art">'+(ph?thumbImg(ph):SHIRT_SVG)+'<span class="code">'+esc(it.code)+'</span></div>'+
+        '<div class="post-body"><div class="row-between"><h4>'+esc(pieceName(it))+'</h4><b class="pr">'+right+'</b></div>'+
+        '<div class="meta">'+pill+(facts?'<span>'+esc(facts)+'</span>':'')+'</div>'+
+        (meas?'<p class="small muted" style="margin:6px 0 0">'+meas+'</p>':'')+
+        (R.summary?'<p class="small" style="margin:6px 0 0">'+esc(R.summary)+'</p>':'')+flag+'</div></article>';
+    }
+    if(view==='list'){
+      return '<div class="lr" data-id="'+it.id+'"><div class="th">'+(ph?thumbImg(ph):SHIRT_SVG)+'</div><div class="t"><b>'+esc(pieceName(it))+'</b><span><i class="cd">'+esc(it.code)+'</i>'+(facts?' · '+esc(facts):'')+'</span>'+(stale?'<span class="flag-i">Still live on '+staleVenues(it).map(v=>VENUE_LABEL[v]).join(', ')+'</span>':'')+'</div><div class="rt">'+pill+'<span>'+right+'</span></div></div>';
+    }
     return '<div class="pcard" data-id="'+it.id+'"><div class="ph">'+(ph?thumbImg(ph):SHIRT_SVG)+'<span class="code">'+esc(it.code)+'</span></div>'+
-      '<div class="body"><div class="t">'+esc(pieceName(it))+'</div><div class="meta"><span class="pill st-'+it.status+'">'+esc(venues||STATUS_LABEL[it.status])+'</span><span>'+right+'</span></div>'+
-      (stale?'<div class="flag">Still live on '+staleVenues(it).map(v=>VENUE_LABEL[v]).join(', ')+'</div>':'')+'</div></div>';
+      '<div class="body"><div class="t">'+esc(pieceName(it))+'</div><div class="meta">'+pill+'<span>'+right+'</span></div>'+flag+'</div></div>';
   }).join('');
 }
+function syncViewSeg(){ const v=['feed','grid','list'].includes(ui.view)?ui.view:'grid'; document.querySelectorAll('#view-seg button').forEach(b=>b.classList.toggle('on', b.dataset.view===v)); }
+document.querySelectorAll('#view-seg button').forEach(b=>b.onclick=()=>{ ui.view=b.dataset.view; saveUi(); syncViewSeg(); renderPieces(); });
+syncViewSeg();
 $('status-chips').onclick=e=>{ const b=e.target.closest('[data-f]'); if(!b) return; ui.filter=b.dataset.f; saveUi(); renderPieces(); };
 let _qT=null; $('q').oninput=()=>{ clearTimeout(_qT); _qT=setTimeout(renderPieces, 150); };
 $('piece-list').onclick=e=>{ const c=e.target.closest('[data-id]'); if(c) openPiece(c.dataset.id); };

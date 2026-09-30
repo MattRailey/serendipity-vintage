@@ -6,17 +6,27 @@
    camera through opts.fallback(), which must click a <input type=file capture> from inside a tap. */
 'use strict';
 const Cam = (function(){
-  let stream=null, root=null, opts=null, kind=null, taken=0, chain=Promise.resolve(), closing=false;
+  let stream=null, kept=null, keptT=null, root=null, opts=null, kind=null, taken=0, chain=Promise.resolve(), closing=false;
+  const KEEP_MS=5*60*1000;   // a stream kept warm between shots is let go after this long idle
 
   function supported(){ return !!(window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia); }
 
   function stop(){ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } }
+  // Closing the camera screen between shots keeps the camera stream (and so the permission) alive, so the phone
+  // doesn't ask again for every shot. release() lets it go: when the piece is closed, the app is left, or after KEEP_MS.
+  function release(){ clearTimeout(keptT); if(kept){ kept.getTracks().forEach(t=>t.stop()); kept=null; } }
+  function keep(){ if(stream && !(opts&&opts.single)){ kept=stream; stream=null; clearTimeout(keptT); keptT=setTimeout(release, KEEP_MS); } else stop(); }
+  function getStream(){
+    if(kept && kept.getTracks().some(t=>t.readyState==='live')){ const s=kept; kept=null; clearTimeout(keptT); return Promise.resolve(s); }
+    release();
+    return navigator.mediaDevices.getUserMedia({ audio:false, video:{ facingMode:{ ideal:'environment' }, width:{ ideal:4032 }, height:{ ideal:3024 } } });
+  }
   function close(){
-    if(!root) return; closing=true; stop();
+    if(!root) return; closing=true; keep();
     const r=root; root=null; r.remove(); document.removeEventListener('visibilitychange', onVis);
     const done=opts&&opts.onClose; const c=chain; opts=null; closing=false; if(done) c.then(done);
   }
-  function onVis(){ if(document.hidden && root) close(); }   // don't leave the camera running in the background
+  function onVis(){ if(document.hidden){ if(root) close(); release(); } }   // don't leave the camera running in the background
 
   function el(html){ const d=document.createElement('div'); d.innerHTML=html.trim(); return d.firstChild; }
   function esc(s){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
@@ -45,8 +55,8 @@ const Cam = (function(){
     root.querySelector('.cam-shutter').onclick=shoot;
     const v=root.querySelector('video');
     try{
-      stream=await navigator.mediaDevices.getUserMedia({ audio:false, video:{ facingMode:{ ideal:'environment' }, width:{ ideal:4032 }, height:{ ideal:3024 } } });
-      if(!root){ stop(); return; }                 // closed while the permission prompt was up
+      stream=await getStream();
+      if(!root){ keep(); return; }                 // closed while the permission prompt was up
       v.srcObject=stream; await v.play().catch(()=>{});
     }catch(err){
       if(!root) return;
@@ -78,5 +88,6 @@ const Cam = (function(){
     }, 'image/jpeg', 0.92);
   }
 
-  return { supported, open, close };
+  document.addEventListener('visibilitychange', ()=>{ if(document.hidden) release(); });
+  return { supported, open, close, release };
 })();

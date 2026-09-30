@@ -59,4 +59,9 @@ t('bag', () => {
   const r = P('width 12, height nine, depth four, strap drop twenty two');
   assert.deepEqual(r.m, { width: 12, height: 9, depth: 4, drop: 22 });
 });
+t('bare numbers are kept, not dropped or split', () => {
+  assert.deepEqual(P('eighteen and a half').loose, [18.5]);
+  assert.deepEqual(P('pit to pit 21, 29').loose, [29]);
+  assert.deepEqual(P('length 27, small pinhole').loose, []);
+});
 console.log(n + ' parser tests passed' + (process.exitCode ? ' (some failed)' : ''));

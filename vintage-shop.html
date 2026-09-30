@@ -44,7 +44,10 @@
 <main>
   <!-- PIECES -->
   <section id="p-pieces" class="panel">
-    <div class="search"><input id="q" type="search" placeholder="Search code, name, brand, notes" autocomplete="off"></div>
+    <div class="search-row">
+      <div class="search"><input id="q" type="search" placeholder="Search pieces" autocomplete="off"></div>
+      <div class="seg" id="view-seg" role="group" aria-label="How to show pieces"><button data-view="feed">Feed</button><button data-view="grid">Cards</button><button data-view="list">List</button></div>
+    </div>
     <div id="status-chips" class="chips scroll"></div>
     <div id="piece-list" class="cards"></div>
   </section>
@@ -138,10 +141,12 @@
       <div class="mic-text">
         <b id="pc-mic-label">Tap and talk</b>
         <span class="muted small" id="pc-mic-hint">“Tag size medium, pit to pit eighteen and a half, length twenty-seven, small pinhole left cuff.”</span>
+        <button class="linkish" id="pc-walk" type="button">Or: walk me through each box — just say the numbers</button>
       </div>
     </div>
     <textarea id="pc-dict" rows="2" placeholder="What you say lands here. You can also type, or use the mic on the keyboard."></textarea>
     <div id="pc-interim" class="interim"></div>
+    <div id="pc-heard"></div>
     <div class="grid2">
       <label class="fld"><span>Tag size</span><input id="pc-size" placeholder="M, 12, 32 × 30"></label>
       <label class="fld"><span>Era (if known)</span><input id="pc-era" placeholder="70s"></label>

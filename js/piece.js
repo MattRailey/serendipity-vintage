@@ -18,9 +18,10 @@ function openPiece(id){
   curId=id; const it=cur(); if(!it) return;
   $('piece-sheet').classList.add('open'); lockPage();
   $('piece-sheet').querySelector('.sheet-body').scrollTop=0;
+  _done=it.dictation||''; _target=null; _heard=null; renderHeard();
   fillPiece(true);
 }
-function closePiece(){ flushPiece(); stopMicIfOn(); $('piece-sheet').classList.remove('open'); curId=null; unlockPage(); renderPieces(); }
+function closePiece(){ flushPiece(); stopMicIfOn(); Cam.release(); $('piece-sheet').classList.remove('open'); curId=null; unlockPage(); renderPieces(); }
 $('pc-close').onclick=closePiece;
 
 /* ---- fill the form from the record (full=true on open; later only fields not being edited) ---- */
@@ -137,7 +138,7 @@ function measKeys(it){ const t=TYPES[it.type]; const base=t?t.fields.slice():['p
 function renderMeas(flashKeys){
   const it=cur(); const m=it.measurements||{};
   const keys=measKeys(it);
-  $('pc-meas').innerHTML=keys.map(k=>'<label class="meas'+(m[k]!=null?' filled':'')+(flashKeys&&flashKeys.includes(k)?' flash':'')+'"><span>'+esc(MEAS_LABEL[k]||k)+'</span><input data-m="'+k+'" inputmode="decimal" value="'+esc(m[k]!=null?fmtIn(m[k])+'"':'')+'" placeholder="—"></label>').join('');
+  $('pc-meas').innerHTML=keys.map(k=>'<label class="meas'+(m[k]!=null?' filled':'')+(flashKeys&&flashKeys.includes(k)?' flash':'')+(k===_target?' target':'')+'"><span>'+esc(MEAS_LABEL[k]||k)+'</span><input data-m="'+k+'" inputmode="decimal" value="'+esc(m[k]!=null?fmtIn(m[k])+'"':'')+'" placeholder="—"></label>').join('');
 }
 $('pc-meas').addEventListener('focusin', e=>{ const i=e.target.closest('[data-m]'); if(i){ const v=(cur().measurements||{})[i.dataset.m]; i.value=v!=null?v:''; } });
 $('pc-meas').addEventListener('change', e=>{ const i=e.target.closest('[data-m]'); if(!i) return;
@@ -151,45 +152,97 @@ $('pc-more-meas').onclick=()=>{
   edit(it=>{ it.extraMeas=(it.extraMeas||[]).concat(o[0]); });
 };
 
-/* ---- dictation ---- */
-function applyDictation(final){
-  const it=cur(); if(!it) return;
-  const r=parseDictation($('pc-dict').value);
-  const changed=[];
-  const m=Object.assign({}, it.measurements);
-  for(const [k,v] of Object.entries(r.m)) if(m[k]!==v){ m[k]=v; changed.push(k); }
-  let dirty=changed.length>0;
-  if(dirty) it.measurements=m;
-  if(r.size && r.size!==it.size){ it.size=r.size; dirty=true; setVal('pc-size', r.size); }
-  if(final){
-    const addTo=(field, lines)=>{ const curTxt=it[field]||''; const add=lines.filter(l=>!norm(curTxt).includes(norm(l))); if(add.length){ it[field]=(curTxt?curTxt.replace(/\s+$/,'')+'\n':'')+add.join('\n'); dirty=true; } };
-    addTo('condition', r.condition); addTo('notes', r.notes);
-    const d=$('pc-dict').value.trim(); if(d!==(it.dictation||'')){ it.dictation=d; dirty=true; }
-  }
-  if(dirty){ touch(it); commit(); renderMeas(changed); setVal('pc-cond', it.condition); setVal('pc-notes', it.notes); updateReadyBtn(); }
+/* ---- dictation ----
+   Each phrase is read once, when it is finished, and never again. So a number she fixes by hand in the boxes
+   isn't overwritten by something said a minute ago. What was heard is shown right under the box with where it
+   went, and can be undone or moved. A number said with no name ("eighteen and a half") goes to the box
+   she's "listening for" (tap a box, or Walk me through), or waits as a chip asking which one it was. */
+let _done='', _target=null, _heard=null;
+const MEAS_NAME=k=>MEAS_LABEL[k]||k;
+const nextEmpty=(it, m, from)=>{ const ks=measKeys(it), i=ks.indexOf(from); return [...ks.slice(i+1), ...ks.slice(0,Math.max(i,0))].find(k=>m[k]==null)||null; };
+function markTarget(){
+  document.querySelectorAll('#pc-meas [data-m]').forEach(i=>i.closest('.meas').classList.toggle('target', i.dataset.m===_target));
+  if($('pc-mic').classList.contains('on')) $('pc-mic-label').textContent = _target ? 'Listening for '+MEAS_NAME(_target)+'…' : 'Listening… tap to stop';
 }
-let _dT=null;
-$('pc-dict').addEventListener('input', ()=>{ clearTimeout(_dT); _dT=setTimeout(()=>applyDictation(false), 350); });
-$('pc-dict').addEventListener('change', ()=>applyDictation(true));
-let _micBase='';
-function stopMicIfOn(){ if($('pc-mic').classList.contains('on')) stopMic(); }
-$('pc-mic').onclick=()=>{
-  if($('pc-mic').classList.contains('on')){ stopMic(); return; }
-  if(!micSupported()){ $('pc-dict').focus(); toast('Tap the microphone on the keyboard and talk', 3200); return; }
-  _micBase=$('pc-dict').value.trim(); if(_micBase && !/[,.;]$/.test(_micBase)) _micBase+=',';
-  const ok=startMic((finalText, interim)=>{
-    $('pc-dict').value=(_micBase?_micBase+' ':'')+finalText.replace(/,\s*$/,'');
-    $('pc-interim').textContent=interim;
-    applyDictation(false);
-  }, (state, err)=>{
-    const on=state==='start';
-    $('pc-mic').classList.toggle('on', on);
-    $('pc-mic-label').textContent= on ? 'Listening… tap to stop' : 'Tap and talk';
-    if(state==='end'){ $('pc-interim').textContent=''; applyDictation(true); }
-    if(state==='error' && err!=='no-speech' && err!=='aborted'){ toast(err==='not-allowed' ? 'Microphone not allowed. Use the mic on the keyboard instead.' : 'Mic stopped ('+err+')', 3500); if(err==='not-allowed'){ $('pc-dict').focus(); } }
+function setTarget(k){ _target=k||null; markTarget(); }
+
+function applyPhrase(text){
+  const it=cur(); if(!it || !text.trim()) return;
+  if(/^\s*(?:skip|next|pass)\W*$/i.test(text)){ if(_target) setTarget(nextEmpty(it, it.measurements||{}, _target)); return; }
+  const r=parseDictation(text);
+  const snap={ meas:Object.assign({}, it.measurements), size:it.size, cond:it.condition, notes:it.notes };
+  const m=Object.assign({}, it.measurements), changed=[], items=[], loose=[];
+  let dirty=false;
+  for(const [k,v] of Object.entries(r.m)){ if(m[k]!==v){ m[k]=v; changed.push(k); dirty=true; } items.push({ kind:'m', text:MEAS_NAME(k)+' '+fmtIn(v)+'"' }); }
+  for(const v of r.loose){
+    if(_target){ const k=_target; m[k]=v; changed.push(k); dirty=true; items.push({ kind:'m', text:MEAS_NAME(k)+' '+fmtIn(v)+'"' }); setTarget(nextEmpty(it, m, k)); }
+    else loose.push(v);
+  }
+  if(r.size && r.size!==it.size){ it.size=r.size; dirty=true; setVal('pc-size', r.size); items.push({ kind:'size', text:'Size '+r.size }); }
+  const addTo=(field, lines, kind)=>{ const curTxt=it[field]||''; const add=lines.filter(l=>!norm(curTxt).includes(norm(l)));
+    if(add.length){ it[field]=(curTxt?curTxt.replace(/\s+$/,'')+'\n':'')+add.join('\n'); dirty=true; for(const l of add) items.push({ kind, text:l }); } };
+  addTo('condition', r.condition, 'cond'); addTo('notes', r.notes, 'note');
+  if(dirty){ it.measurements=m; touch(it); commit(); renderMeas(changed); setVal('pc-cond', it.condition); setVal('pc-notes', it.notes); updateReadyBtn(); markTarget(); }
+  _heard = (items.length||loose.length) ? { said:text, items, loose, snap } : null;
+  renderHeard();
+}
+function renderHeard(){
+  const box=$('pc-heard'); const it=cur();
+  if(!_heard || !it){ box.innerHTML=''; return; }
+  const H=_heard; let h='<div class="heard"><div class="row-between"><b>Just heard</b><button class="linkish" data-undo>Undo</button></div><div class="hchips">';
+  H.items.forEach((c,i)=>{
+    if(c.kind==='cond'||c.kind==='note') h+='<span class="hchip '+c.kind+'"><i>'+(c.kind==='cond'?'Condition':'Notes')+'</i> '+esc(c.text)+' <button data-mv="'+i+'" aria-label="Move to '+(c.kind==='cond'?'notes':'condition')+'" title="Move to '+(c.kind==='cond'?'notes':'condition')+'">⇄</button></span>';
+    else h+='<span class="hchip '+c.kind+'">'+esc(c.text)+'</span>';
+  });
+  h+='</div>';
+  const free=measKeys(it).filter(k=>(it.measurements||{})[k]==null);
+  H.loose.forEach((v,i)=>{ h+='<div class="hloose"><b>'+fmtIn(v)+'"</b> — which one?<div class="hpick">'+(free.length?free:measKeys(it)).map(k=>'<button data-place="'+i+'" data-k="'+k+'">'+esc(MEAS_NAME(k))+'</button>').join('')+'<button data-drop="'+i+'" class="drop">Not a measurement</button></div></div>'; });
+  box.innerHTML=h+'</div>';
+}
+$('pc-heard').addEventListener('click', e=>{
+  const H=_heard, it=cur(); if(!H||!it) return;
+  const u=e.target.closest('[data-undo]');
+  if(u){ edit(x=>{ x.measurements=H.snap.meas; for(const [f,v] of [['size',H.snap.size],['condition',H.snap.cond],['notes',H.snap.notes]]){ if(v) x[f]=v; else delete x[f]; } });
+    setVal('pc-size', it.size); setVal('pc-cond', it.condition); setVal('pc-notes', it.notes); renderMeas(false); updateReadyBtn(); _heard=null; renderHeard(); return; }
+  const mv=e.target.closest('[data-mv]');
+  if(mv){ const c=H.items[+mv.dataset.mv]; const from=c.kind==='cond'?'condition':'notes', to=c.kind==='cond'?'notes':'condition';
+    edit(x=>{ x[from]=(x[from]||'').split('\n').filter(l=>l.trim()!==c.text).join('\n'); if(!x[from]) delete x[from]; x[to]=(x[to]?x[to].replace(/\s+$/,'')+'\n':'')+c.text; });
+    c.kind = c.kind==='cond' ? 'note' : 'cond'; setVal('pc-cond', it.condition); setVal('pc-notes', it.notes); renderHeard(); return; }
+  const pl=e.target.closest('[data-place]');
+  if(pl){ const v=H.loose[+pl.dataset.place], k=pl.dataset.k;
+    edit(x=>{ x.measurements=Object.assign({}, x.measurements); x.measurements[k]=v; });
+    H.items.push({ kind:'m', text:MEAS_NAME(k)+' '+fmtIn(v)+'"' }); H.loose.splice(+pl.dataset.place,1); renderMeas([k]); updateReadyBtn(); renderHeard(); return; }
+  const dr=e.target.closest('[data-drop]');
+  if(dr){ H.loose.splice(+dr.dataset.drop,1); renderHeard(); }
+});
+// typed or pasted text is read when she's done with the box
+$('pc-dict').addEventListener('change', ()=>{
+  const v=$('pc-dict').value;
+  if(v.startsWith(_done)){ const tail=v.slice(_done.length).replace(/^[\s,]+/,''); _done=v; if(tail) applyPhrase(tail); } else _done=v;   // editing earlier text doesn't re-apply it
+});
+// while the mic is on, tapping a box means "the next number is for this one" (no keyboard pops up)
+$('pc-meas').addEventListener('mousedown', e=>{ if(micOn() && e.target.closest('.meas')) e.preventDefault(); });
+$('pc-meas').addEventListener('click', e=>{ const l=e.target.closest('.meas'); if(!l || !micOn()) return; e.preventDefault(); const k=l.querySelector('[data-m]').dataset.m; setTarget(_target===k?null:k); });
+
+function stopMicIfOn(){ if(micOn()) stopMic(); }
+function startListening(){
+  if(!micSupported()){ $('pc-dict').focus(); toast('Tap the microphone on the keyboard and talk', 3200); return false; }
+  const ok=startMic(phrase=>{
+    const d=$('pc-dict'), t=d.value.replace(/\s+$/,''); d.value=(t?t+', ':'')+phrase; _done=d.value; queueField('pc-dict','dictation', d.value);
+    applyPhrase(phrase);
+  }, interim=>{ $('pc-interim').textContent=interim; },
+  (state, err)=>{
+    const on=state==='start'; $('pc-mic').classList.toggle('on', on);
+    if(on) markTarget(); else $('pc-mic-label').textContent='Tap and talk';
+    if(state==='end'||state==='idle'||state==='error'){ setTarget(null); flushPiece(); }
+    if(state==='idle') toast('Mic paused — tap it to keep going', 3000);
+    if(state==='error' && err!=='no-speech' && err!=='aborted'){ toast(err==='not-allowed'||err==='service-not-allowed' ? 'Microphone is off for this app. Use the mic on the keyboard instead.' : 'Mic stopped ('+err+')', 3800); if(_micDenied) $('pc-dict').focus(); }
   });
   if(!ok){ $('pc-dict').focus(); toast('Tap the microphone on the keyboard and talk', 3200); }
-};
+  return ok;
+}
+$('pc-mic').onclick=()=>{ if(micOn()) stopMic(); else startListening(); };
+$('pc-walk').onclick=()=>{ const it=cur(); if(!it) return; if(!micOn() && !startListening()) return; setTarget(measKeys(it).find(k=>(it.measurements||{})[k]==null)||null); };
 
 /* ---- Claude's listing drafts ---- */
 let _lstTab='etsy';

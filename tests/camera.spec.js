@@ -50,3 +50,18 @@ test('camera turned off: says so and offers the phone camera', async ({ page, co
   const fc = page.waitForEvent('filechooser'); await page.click('.cam-fb'); await fc;
   await expect(page.locator('.cam')).toHaveCount(0);
 });
+
+test('camera: reopening between shots reuses the stream (no second permission ask); closing the piece lets it go', async ({ page }) => {
+  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  await page.addInitScript(() => { window.__gum = 0; const g = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices); navigator.mediaDevices.getUserMedia = c => { window.__gum++; return g(c); }; });
+  await mockNet(page); await openApp(page, { camera: true });
+  await page.click('#fab'); await page.click('[data-add="piece"]');
+  await page.click('[data-shot="front"]'); await page.waitForFunction(() => document.querySelector('.cam video').videoWidth > 0);
+  await page.click('.cam-done');
+  await page.click('[data-shot="flaw"]'); await page.waitForFunction(() => document.querySelector('.cam video').videoWidth > 0);
+  await page.click('.cam-done');
+  expect(await page.evaluate(() => window.__gum)).toBe(1);
+  await page.click('#pc-close');                                   // piece closed → camera released
+  await page.click('[data-id]'); await page.click('[data-shot="front"]'); await page.waitForFunction(() => window.__gum === 2);
+  expect(errs).toEqual([]);
+});
