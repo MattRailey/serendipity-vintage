@@ -30,7 +30,13 @@
 <body>
 
 <header class="top">
-  <div class="brand"><span class="brand-mark" aria-hidden="true"><img src="icons/icon-192.png" alt=""></span><div><h1 id="shop-name">Serendipity Vintage</h1><div class="sync"><span id="sync-dot" class="sync-dot"></span><span id="sync-text">Starting…</span></div></div></div>
+  <div class="brand"><span class="brand-mark" aria-hidden="true"><img src="icons/icon-192.png" alt=""></span><div><h1 id="shop-name">Serendipity Vintage</h1><div class="sync"><span id="sync-dot" class="sync-dot"></span><span id="sync-text">Starting…</span></div></div><button id="fab" class="fab" aria-label="Add">+</button></div>
+  <nav class="tabs">
+  <button data-panel="pieces"><svg viewBox="0 0 24 24"><path d="M8 3l-4 3 2 4 2-1v12h8V9l2 1 2-4-4-3c-1 1.5-2.3 2-4 2S9 4.5 8 3z"/></svg><span>Pieces</span></button>
+  <button data-panel="hauls"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1.5 12h-11zM9 8V6a3 3 0 016 0v2"/></svg><span>Hauls</span></button>
+  <button data-panel="money"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg><span>Money</span></button>
+  <button data-panel="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg><span>Settings</span></button>
+</nav>
   <div id="queue-note" class="queue-note hide"></div>
 </header>
 
@@ -102,19 +108,11 @@
   </section>
 </main>
 
-<button id="fab" class="fab" aria-label="Add">+</button>
 <div id="fab-menu" class="fab-menu">
   <button data-add="haul"><b>New haul</b><span>Receipt, store, pieces bought</span></button>
   <button data-add="piece"><b>New piece</b><span>One item, no receipt</span></button>
   <button data-add="expense"><b>Expense</b><span>Supplies, mailers, fees</span></button>
 </div>
-
-<nav class="tabs">
-  <button data-panel="pieces"><svg viewBox="0 0 24 24"><path d="M8 3l-4 3 2 4 2-1v12h8V9l2 1 2-4-4-3c-1 1.5-2.3 2-4 2S9 4.5 8 3z"/></svg><span>Pieces</span></button>
-  <button data-panel="hauls"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1.5 12h-11zM9 8V6a3 3 0 016 0v2"/></svg><span>Hauls</span></button>
-  <button data-panel="money"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg><span>Money</span></button>
-  <button data-panel="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg><span>Settings</span></button>
-</nav>
 
 <!-- PIECE SHEET -->
 <div id="piece-sheet" class="sheet" role="dialog" aria-modal="true">
