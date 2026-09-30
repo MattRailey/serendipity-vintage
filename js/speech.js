@@ -136,7 +136,7 @@ if(typeof module!=='undefined') module.exports={ parseDictation, wordsToNumbers,
    takes the keyboard's own dictation mic.
    ============================================================ */
 const SR = typeof window!=='undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
-let _rec=null, _want=false, _restartT=null, _pending=false, _stateCb=null, _micDenied=false;
+let _rec=null, _want=false, _restartT=null, _pending=false, _stateCb=null, _micDenied=false, _flushCb=null;
 const MIC_IDLE_RESTARTS = 4;      // restarts in a row with nothing said → stop, so it doesn't listen all afternoon
 function micSupported(){ return !!SR && !_micDenied; }
 function micOn(){ return _want; }
@@ -164,6 +164,7 @@ function startMic(onPhrase, onInterim, onState){
     };
     rec.onend=()=>{
       if(_rec!==rec) return;
+      const fcb=_flushCb; _flushCb=null; if(fcb){ quiet=0; fcb(); }      // a flush is not silence
       if(_want){
         if(++quiet>MIC_IDLE_RESTARTS){ _want=false; onInterim(''); onState('idle'); return; }
         _pending=true; _restartT=setTimeout(()=>{ _pending=false; if(_want){ try{ begin(); }catch(err){ _want=false; onState('end'); } } }, 250);
@@ -173,6 +174,14 @@ function startMic(onPhrase, onInterim, onState){
     if(first){ first=false; onState('start'); }
   };
   try{ begin(); return true; }catch(e){ _want=false; return false; }
+}
+// Finish whatever is being said right now (the phone only closes a phrase after a pause), then call cb.
+// Used when she taps a different box: the words just spoken still go to the box she was on.
+function micFlush(cb){
+  if(!_want || !_rec || _pending){ cb(); return; }
+  _flushCb=cb;
+  setTimeout(()=>{ if(_flushCb===cb){ _flushCb=null; cb(); } }, 1500);
+  try{ _rec.stop(); }catch(e){ _flushCb=null; cb(); }
 }
 function stopMic(){ _want=false; clearTimeout(_restartT); if(_pending){ _pending=false; _stateCb&&_stateCb('end'); } try{ _rec && _rec.stop(); }catch(e){} }
 if(typeof document!=='undefined') document.addEventListener('visibilitychange', ()=>{ if(document.hidden && _want) stopMic(); });

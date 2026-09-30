@@ -9,7 +9,7 @@ async function fakeMic(page) {
     window.__starts = 0;
     window.SpeechRecognition = window.webkitSpeechRecognition = class {
       start() { window.__starts++; window.__rec = this; this.started = true; }
-      stop() { this.started = false; setTimeout(() => this.onend && this.onend(), 0); }
+      stop() { this.started = false; setTimeout(() => { if (this.pending) { const p = this.pending; this.pending = null; window.__say([[p, true]]); } this.onend && this.onend(); }, 0); }
     };
     // results = [[text, isFinal], …] — the whole list so far, like a real recognizer sends
     window.__say = results => window.__rec.onresult({ resultIndex: 0, results: results.map(([t, f]) => Object.assign([{ transcript: t }], { isFinal: f })) });
@@ -103,5 +103,24 @@ test('pieces: Feed, Cards and List views, remembered', async ({ page }) => {
   await page.reload(); await page.waitForSelector('.tabs button.active');
   await expect(page.locator('#view-seg [data-view="list"]')).toHaveClass(/on/);
   await page.click('#piece-list .lr >> nth=0'); await expect(page.locator('#piece-sheet')).toHaveClass(/open/);
+  expect(errs).toEqual([]);
+});
+
+test('mic: tap a box, speak, tap the next box straight away — the words go to the box they were said for', async ({ page }) => {
+  const errs = watchErrors(page); await fakeMic(page); await mockNet(page); await openApp(page); await newPiece(page);
+  await page.click('#pc-mic');
+  await page.click('.meas:has([data-m="sleeve"])');
+  await expect(page.locator('.meas.target')).toContainText('Sleeve');
+  await page.waitForFunction(() => window.__starts === 2);                   // tapping briefly restarts the listener
+  // she has spoken but the phone hasn't closed the phrase yet; she taps the next box
+  await page.evaluate(() => { window.__rec.pending = 'twenty four and a half'; window.__say([['twenty four and a half', false]]); });
+  await page.click('.meas:has([data-m="length"])');
+  await expect(page.locator('[data-m="sleeve"]')).toHaveValue('24½"');
+  await expect(page.locator('#pc-mic-label')).toContainText('Listening for Length');
+  await expect(page.locator('[data-m="length"]')).toHaveValue('');
+  await page.waitForFunction(() => window.__starts === 3);                   // session carried on
+  await page.evaluate(() => window.__say([['twenty seven', true]]));
+  await expect(page.locator('[data-m="length"]')).toHaveValue('27"');
+  await expect(page.locator('#pc-mic')).toHaveClass(/on/);
   expect(errs).toEqual([]);
 });

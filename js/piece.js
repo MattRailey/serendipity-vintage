@@ -161,7 +161,7 @@ let _done='', _target=null, _heard=null;
 const MEAS_NAME=k=>MEAS_LABEL[k]||k;
 const nextEmpty=(it, m, from)=>{ const ks=measKeys(it), i=ks.indexOf(from); return [...ks.slice(i+1), ...ks.slice(0,Math.max(i,0))].find(k=>m[k]==null)||null; };
 function markTarget(){
-  document.querySelectorAll('#pc-meas [data-m]').forEach(i=>i.closest('.meas').classList.toggle('target', i.dataset.m===_target));
+  document.querySelectorAll('#pc-meas [data-m]').forEach(i=>{ const t=i.dataset.m===_target; i.closest('.meas').classList.toggle('target', t); if(document.activeElement!==i) i.placeholder = t ? 'say it' : '—'; });
   if($('pc-mic').classList.contains('on')) $('pc-mic-label').textContent = _target ? 'Listening for '+MEAS_NAME(_target)+'…' : 'Listening… tap to stop';
 }
 function setTarget(k){ _target=k||null; markTarget(); }
@@ -222,7 +222,7 @@ $('pc-dict').addEventListener('change', ()=>{
 });
 // while the mic is on, tapping a box means "the next number is for this one" (no keyboard pops up)
 $('pc-meas').addEventListener('mousedown', e=>{ if(micOn() && e.target.closest('.meas')) e.preventDefault(); });
-$('pc-meas').addEventListener('click', e=>{ const l=e.target.closest('.meas'); if(!l || !micOn()) return; e.preventDefault(); const k=l.querySelector('[data-m]').dataset.m; setTarget(_target===k?null:k); });
+$('pc-meas').addEventListener('click', e=>{ const l=e.target.closest('.meas'); if(!l || !micOn()) return; e.preventDefault(); const k=l.querySelector('[data-m]').dataset.m, nt=_target===k?null:k; micFlush(()=>setTarget(nt)); });
 
 function stopMicIfOn(){ if(micOn()) stopMic(); }
 function startListening(){
