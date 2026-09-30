@@ -74,16 +74,16 @@ function renderReceipt(pre, path){
   $(pre+'-receipt-img').innerHTML = path ? thumbImg(path) : '';
   $(pre+'-receipt-label').textContent = path ? 'Receipt saved — tap to retake' : 'Snap the receipt';
 }
-$('hl-receipt-btn').onclick=()=>$('hl-cam').click();
-$('hl-cam').onchange=async e=>{
-  const f=e.target.files[0]; e.target.value=''; if(!f) return;
+$('hl-receipt-btn').onclick=()=>{ if(Cam.supported()) Cam.open({ title:'Receipt', single:true, onShot:f=>saveHaulReceipt(f), fallback:()=>$('hl-cam').click() }); else $('hl-cam').click(); };
+$('hl-cam').onchange=e=>{ const f=e.target.files[0]; e.target.value=''; if(f) saveHaulReceipt(f); };
+async function saveHaulReceipt(f){
   const d=haulId?getRec('hauls',haulId):haulDraft;
   const date=$('hl-date').value||todayLocal(), s=getRec('stores',$('hl-store').value);
   const path=dbxFolder()+'/receipts/'+date+' '+(slug(s&&s.name)||'haul')+' '+d.id.slice(-5)+'-'+Date.now().toString(36).slice(-4)+'.jpg';
   await queuePhoto(f, path, 'receipt');
   if(haulId){ const h=getRec('hauls',haulId); h.receipt=path; touch(h); commit(); } else haulDraft.receipt=path;
   renderReceipt('hl', path);
-};
+}
 $('hl-save').onclick=()=>{
   const total=num($('hl-total').value), count=parseInt($('hl-count').value,10)||0;
   const storeId=$('hl-store').value && $('hl-store').value!=='__new' ? $('hl-store').value : undefined;
@@ -143,15 +143,15 @@ function openExpense(id){
 }
 function closeExpense(){ $('exp-sheet').classList.remove('open'); expId=null; expDraft=null; unlockPage(); }
 $('ex-close').onclick=closeExpense;
-$('ex-receipt-btn').onclick=()=>$('ex-cam').click();
-$('ex-cam').onchange=async e=>{
-  const f=e.target.files[0]; e.target.value=''; if(!f) return;
+$('ex-receipt-btn').onclick=()=>{ if(Cam.supported()) Cam.open({ title:'Receipt', single:true, onShot:f=>saveExpenseReceipt(f), fallback:()=>$('ex-cam').click() }); else $('ex-cam').click(); };
+$('ex-cam').onchange=e=>{ const f=e.target.files[0]; e.target.value=''; if(f) saveExpenseReceipt(f); };
+async function saveExpenseReceipt(f){
   const d=expId?getRec('expenses',expId):expDraft;
   const path=dbxFolder()+'/receipts/'+($('ex-date').value||todayLocal())+' expense '+slug($('ex-cat').value)+' '+d.id.slice(-5)+'-'+Date.now().toString(36).slice(-4)+'.jpg';
   await queuePhoto(f, path, 'receipt');
   if(expId){ const x=getRec('expenses',expId); x.receipt=path; touch(x); commit(); } else expDraft.receipt=path;
   renderReceipt('ex', path);
-};
+}
 $('ex-save').onclick=()=>{
   const amount=num($('ex-amount').value); if(amount==null){ toast('Add the amount'); $('ex-amount').focus(); return; }
   const x=expId?getRec('expenses',expId):expDraft;

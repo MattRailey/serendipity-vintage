@@ -96,14 +96,24 @@ function renderPhotos(){
 }
 async function markWaiting(){ let keys=[]; try{ keys=await idbKeys('q:'); }catch(e){} const w=new Set(keys.map(k=>k.slice(2)));
   $('pc-photos').querySelectorAll('figure').forEach(f=>{ const im=f.querySelector('img'); if(im && w.has(im.dataset.path) && !f.querySelector('.wait')) f.insertAdjacentHTML('beforeend','<span class="wait">waiting</span>'); }); }
-$('pc-shots').onclick=async e=>{ const b=e.target.closest('[data-shot]'); if(!b) return; _shotKind=b.dataset.shot; $('pc-cam').click(); };
+$('pc-shots').onclick=e=>{ const b=e.target.closest('[data-shot]'); if(!b) return; _shotKind=b.dataset.shot;
+  if(Cam.supported()) openPieceCamera(_shotKind); else $('pc-cam').click(); };
+// In-app camera: no "Use Photo" step. After each must-have shot it moves to the next one that's missing.
+function openPieceCamera(kind){
+  const it=cur(); if(!it) return;
+  const seen=new Set((it.photos||[]).map(p=>p.kind));
+  Cam.open({ title:it.code, shots:SHOTS, kind,
+    fallback:k=>{ _shotKind=k; $('pc-cam').click(); },
+    onShot:(f,k)=>addPhotos([f], k, true),
+    next:k=>{ seen.add(k); if(!MUST_SHOTS.includes(k)) return k; return MUST_SHOTS.find(x=>!seen.has(x)) || 'detail'; } });
+}
 $('pc-photos').addEventListener('click', e=>{
   const x=e.target.closest('[data-rm]');
   if(x){ const i=+x.dataset.rm; const it=cur(); const p=it.photos[i]; if(!confirm('Remove this '+(SHOT_LABEL[p.kind]||'')+' photo from the piece?')) return;
     edit(it=>{ it.photos=it.photos.filter((_,j)=>j!==i); }); idbDel('q:'+p.path).catch(()=>{}); updateQueueBadge(); return; }
   const im=e.target.closest('img[data-path]'); if(im) openFullPhoto(im.dataset.path);
 });
-async function addPhotos(files, kind){
+async function addPhotos(files, kind, quiet){
   const it=cur(); if(!it || !files.length) return;
   const code=it.code;
   let n=Math.max(0, ...(it.photos||[]).map(p=>parseInt((p.path.match(/ (\d\d) [a-z]+\.jpg$/)||[])[1]||0,10)));
@@ -117,7 +127,7 @@ async function addPhotos(files, kind){
   if(added.length) edit(it=>{ it.photos=(it.photos||[]).concat(added); });
   // walk her through the must-have shots: after Front, offer Back, and so on
   const have=new Set((cur().photos||[]).map(p=>p.kind)); const next=MUST_SHOTS.find(k=>!have.has(k));
-  if(next && MUST_SHOTS.includes(kind)) toast('Next: '+SHOT_LABEL[next]);
+  if(next && MUST_SHOTS.includes(kind) && !quiet) toast('Next: '+SHOT_LABEL[next]);
 }
 $('pc-cam').onchange=e=>{ const f=[...e.target.files]; e.target.value=''; addPhotos(f, _shotKind); };
 $('pc-lib').onchange=e=>{ const f=[...e.target.files]; e.target.value=''; addPhotos(f, _shotKind||'other'); };

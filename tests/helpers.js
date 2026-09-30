@@ -28,7 +28,9 @@ async function mockNet(page, opts = {}) {
   });
   return net;
 }
-async function openApp(page, { store = null, dropbox = true, extra = {} } = {}) {
+async function openApp(page, { store = null, dropbox = true, extra = {}, camera = false } = {}) {
+  // Without a fake camera the app falls back to the phone's own camera (a file picker), which most tests use.
+  if (!camera) await page.addInitScript(() => { Object.defineProperty(navigator, 'mediaDevices', { value: undefined, configurable: true }); });
   await page.goto(APP + '?t=blank');
   await page.evaluate(async ({ store, dropbox, extra }) => {
     localStorage.clear();
