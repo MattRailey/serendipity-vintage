@@ -32,7 +32,7 @@ There is no server and no account: the app runs in the browser, and everything i
    - Under Permissions, tick `files.content.read` and `files.content.write`, then click Submit.
    - Under Settings, add the redirect URI `https://mattrailey.github.io/serendipity-vintage/vintage-shop`.
    - Copy the **App key**.
-2. **Connect your own phone or computer.** Open the app, go to **Settings → Dropbox**, paste the app key, tap **Connect Dropbox**, and sign in. The shop folder is `/Workspace/Serendipity Vintage`.
+2. **Connect your own phone or computer.** Open the app, go to **Settings → Dropbox** and tap **Connect Dropbox** (the app key is built in; if you ever make a new Dropbox app, change `DEFAULT_DBX_APP_KEY` in `js/core.js`), and sign in. The shop folder is `/Workspace/Serendipity Vintage`.
 3. **Set up her iPhone.**
    - In Settings, tap **Copy set-up link for another phone** and send her the link.
    - She opens it in Safari and taps **Connect Dropbox**. Sign in with your Dropbox; it stays signed in.
